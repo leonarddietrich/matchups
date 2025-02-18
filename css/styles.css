@@ -1,0 +1,24 @@
+body {
+  background: linear-gradient(rgba(22, 22, 24, 0.1), rgba(22, 22, 24, 1)),
+    url("../assets/site/background.png");
+  background-position: center center;
+  background-attachment: fixed;
+  background-size: 20%;
+}
+
+a {
+  text-decoration: none;
+  color: #f2f5f4;
+}
+
+[data-bs-theme="dark"] .element {
+  color: var(--bs-primary-text-emphasis);
+  background-color: var(--bs-primary-bg-subtle);
+}
+
+.match-header-players {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bs-primary-bg-subtle);
+}
