@@ -1,40 +1,31 @@
-const data_roa2 = {
-  stages: [
-    { name: "Aetherian Forest", image: "roa2/stages/AetherianForest.png" },
-    { name: "Godai Delta", image: "roa2/stages/GodaiDelta.png" },
-    { name: "Hodojo", image: "roa2/stages/Hodojo.png" },
-    { name: "Julesvale", image: "roa2/stages/Julesvale.png" },
-    { name: "Merchant Port", image: "roa2/stages/MerchantPort.png" },
-    { name: "Air Armada", image: "roa2/stages/AirArmada.png" },
-    { name: "Fire Capital", image: "roa2/stages/FireCapital.png" },
-    { name: "Hyperborean Harbor", image: "roa2/stages/HyperboreanHarbor.png" },
-    { name: "Rock Wall", image: "roa2/stages/RockWall.png" },
-    { name: "Tempest Peak", image: "roa2/stages/TempestPeak.png" },
-    { name: "Forest Understory", image: "roa2/stages/ForestUnderstory.png" },
-    { name: "Stormswept Pillar", image: "roa2/stages/StormsweptPillar.png" },
-  ],
-  characters: [
-    { name: "Clairen", portrait: "roa2/characters/RoA2_Clairen_Portrait.png" },
-    { name: "Etalus", portrait: "roa2/characters/RoA2_Etalus_Portrait.png" },
-    { name: "Fleet", portrait: "roa2/characters/RoA2_Fleet_Portrait.png" },
-    {
-      name: "Forsburn",
-      portrait: "roa2/characters/RoA2_Forsburn_Portrait.png",
-    },
-    { name: "Kragg", portrait: "roa2/characters/RoA2_Kragg_Portrait.png" },
-    {
-      name: "Loxodont",
-      portrait: "roa2/characters/RoA2_Loxodont_Portrait.png",
-    },
-    { name: "Maypul", portait: "roa2/characters/RoA2_Maypul_Portrait.png" },
-    { name: "Orcane", portait: "roa2/characters/RoA2_Orcane_Portrait.png" },
-    { name: "Ranno", portait: "roa2/characters/RoA2_Ranno_Portrait.png" },
-    { name: "Wrastor", portait: "roa2/characters/RoA2_Wrastor_Portrait.png" },
-    {
-      name: "Zetterburn",
-      portait: "roa2/characters/RoA2_Zetterburn_Portrait.png",
-    },
-  ],
+const assets_locations_roa2 = {
+  stages: {
+    "Aetherian Forest": "roa2/stages/AetherianForest.png",
+    "Godai Delta": "roa2/stages/GodaiDelta.png",
+    Hodojo: "roa2/stages/Hodojo.png",
+    Julesvale: "roa2/stages/Julesvale.png",
+    "Merchant Port": "roa2/stages/MerchantPort.png",
+    "Air Armada": "roa2/stages/AirArmada.png",
+    "Fire Capital": "roa2/stages/FireCapital.png",
+    "Hyperborean Harbor": "roa2/stages/HyperboreanHarbor.png",
+    "Rock Wall": "roa2/stages/RockWall.png",
+    "Tempest Peak": "roa2/stages/TempestPeak.png",
+    "Forest Understory": "roa2/stages/ForestUnderstory.png",
+    "Stormswept Pillar": "roa2/stages/StormsweptPillar.png",
+  },
+  characters: {
+    Clairen: "roa2/characters/RoA2_Clairen_Portrait.png",
+    Etalus: "roa2/characters/RoA2_Etalus_Portrait.png",
+    Fleet: "roa2/characters/RoA2_Fleet_Portrait.png",
+    Forsburn: "roa2/characters/RoA2_Forsburn_Portrait.png",
+    Kragg: "roa2/characters/RoA2_Kragg_Portrait.png",
+    Loxodont: "roa2/characters/RoA2_Loxodont_Portrait.png",
+    Maypul: "roa2/characters/RoA2_Maypul_Portrait.png",
+    Orcane: "roa2/characters/RoA2_Orcane_Portrait.png",
+    Ranno: "roa2/characters/RoA2_Ranno_Portrait.png",
+    Wrastor: "roa2/characters/RoA2_Wrastor_Portrait.png",
+    Zetterburn: "roa2/characters/RoA2_Zetterburn_Portrait.png",
+  },
 };
 
 /**
@@ -82,8 +73,8 @@ function diplay_matches(data) {
 
 function build_match_html(match) {
   let html = `
-  <div class="match">
-    <div class="match-header">
+  <div class="container match p-2">
+    <div class="match-header text-center">
       <div class="match-header-players">
         <div class="match-header-players-me">
           <div class="match-header-players-my-name">Me</div>
@@ -94,26 +85,32 @@ function build_match_html(match) {
           <div class="match-header-elo-enemy">${match.enemy_elo}</div>
         </div>
       </div>
-      <div class="match-header-score">${match.my_score}</div>
     </div>
     <div class="match-body">
       <div class="match-body-rounds">
     `;
   for (let i = 0; i < match.stages.length; i++) {
     html += `
-        <div class="match-body-round">
-          <div class="match-body-round-stage">${match.stages[i]}</div>
-          <div class="match-body-round-characters">
-            <div class="match-body-round-character-my">${
+        <div class="match-body-round-${
+          match.results[i] ? "win" : "loss"
+        } text-center d-flex flex-nowrap">
+          <img src="assets/${
+            assets_locations_roa2.stages[match.stages[i]]
+          }" class=" mx-auto p-1" style="height:99px ;width:176px" alt="${
+      match.stages[i]
+    }">
+          <img src="assets/${
+            assets_locations_roa2.characters[match.my_characters[i]]
+          }"
+            class="match-body-round-character-my p-1" style="height:100px ;width:100px" alt="${
               match.my_characters[i]
-            }</div>
-            <div class="match-body-round-character-enemy">${
+            }">
+          <img src="assets/${
+            assets_locations_roa2.characters[match.enemy_characters[i]]
+          }"
+            class="match-body-round-character-enemy p-1" style="height:100px ;width:100px" alt="${
               match.enemy_characters[i]
-            }</div>
-          </div>
-          <div class="match-body-round-result">${
-            match.results[i] ? "Win" : "Loss"
-          }</div>
+            }">
         </div>
     `;
   }

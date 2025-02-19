@@ -16,9 +16,20 @@ a {
   background-color: var(--bs-primary-bg-subtle);
 }
 
+.match {
+  width: 400px;
+}
 .match-header-players {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
   background-color: var(--bs-primary-bg-subtle);
+}
+
+.match-body-round-win {
+  background-color: rgba(132, 255, 138, 0.2);
+}
+
+.match-body-round-loss {
+  background-color: rgba(255, 132, 132, 0.2);
 }
