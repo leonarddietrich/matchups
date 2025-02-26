@@ -1,32 +1,102 @@
-const assets_locations_roa2 = {
-  stages: {
-    "Aetherian Forest": "roa2/stages/AetherianForest.png",
-    "Godai Delta": "roa2/stages/GodaiDelta.png",
-    Hodojo: "roa2/stages/Hodojo.png",
-    Julesvale: "roa2/stages/Julesvale.png",
-    "Merchant Port": "roa2/stages/MerchantPort.png",
-    "Air Armada": "roa2/stages/AirArmada.png",
-    "Fire Capital": "roa2/stages/FireCapital.png",
-    "Hyperborean Harbor": "roa2/stages/HyperboreanHarbor.png",
-    "Rock Wall": "roa2/stages/RockWall.png",
-    "Tempest Peak": "roa2/stages/TempestPeak.png",
-    "Forest Understory": "roa2/stages/ForestUnderstory.png",
-    "Stormswept Pillar": "roa2/stages/StormsweptPillar.png",
-  },
-  characters: {
-    Clairen: "roa2/characters/RoA2_Clairen_Portrait.png",
-    Etalus: "roa2/characters/RoA2_Etalus_Portrait.png",
-    Fleet: "roa2/characters/RoA2_Fleet_Portrait.png",
-    Forsburn: "roa2/characters/RoA2_Forsburn_Portrait.png",
-    Kragg: "roa2/characters/RoA2_Kragg_Portrait.png",
-    Loxodont: "roa2/characters/RoA2_Loxodont_Portrait.png",
-    Maypul: "roa2/characters/RoA2_Maypul_Portrait.png",
-    Orcane: "roa2/characters/RoA2_Orcane_Portrait.png",
-    Ranno: "roa2/characters/RoA2_Ranno_Portrait.png",
-    Wrastor: "roa2/characters/RoA2_Wrastor_Portrait.png",
-    Zetterburn: "roa2/characters/RoA2_Zetterburn_Portrait.png",
-  },
-};
+console.log("data.js loaded");
+
+// load match data from localStorage
+function get_match_data() {
+  console.log("get_match_data() called");
+  var match_data = JSON.parse(localStorage.getItem("match_data"));
+  if (!match_data) {
+    match_data = [];
+    localStorage.setItem("match_data", JSON.stringify(match_data));
+  }
+  return match_data;
+}
+
+// save match data to localStorage
+function set_match_data(match_data) {
+  console.log("set_match_data() called");
+
+  match_data.matches = match_data.matches.sort(
+    (a, b) => a.match_id > b.match_id
+  );
+  localStorage.setItem("match_data", JSON.stringify(match_data));
+}
+
+// get uploaded file
+function replaceUploadedData() {
+  console.log("replaceUploadedData() called");
+  // get file from file input field
+  const input = document.getElementById("uploadMatches");
+  if (!input) {
+    console.log("input element 'uploadMatches' not found");
+    return;
+  }
+  console.log(input.files);
+
+  const file = input.files.length > 0 ? input.files[0] : null;
+  console.log(file);
+  if (!file) {
+    console.log("no file uploaded");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const matches = parse_csv(event.target.result);
+    const match_data = {
+      game: "roa2",
+      type: "singles",
+      bestOf: 3,
+      matches: matches,
+    };
+    console.log("uploaded match data: " + match_data);
+    set_match_data(match_data);
+  };
+  reader.readAsText(file);
+}
+
+function parse_csv(csv) {
+  console.log("parse_csv() called");
+  const matches = [];
+
+  const lines = csv.split("\n");
+  const headers = lines[0].split(",");
+
+  var i = 1;
+  if (!Number.isInteger(headers[0])) {
+    console.log("header: " + headers);
+  } else {
+    // no header, start at first line
+    i = 0;
+  }
+  for (; i < lines.length; i++) {
+    var currentline = lines[i].split(",");
+    currentline = currentline.map((s) => s.trim());
+    console.log(currentline);
+    var match = matches.find((m) => m.match_id == currentline[0]);
+    if (match) {
+      // match already exists, add to it
+      match.my_characters.push(currentline[1]);
+      match.enemy_characters.push(currentline[2]);
+      match.stages.push(currentline[3]);
+      match.results.push(currentline[4] == "Win");
+    } else {
+      // new match
+      match = {
+        match_id: Number(currentline[0]),
+        enemy_name: currentline[5],
+        enemy_elo: Number(currentline[6]),
+        my_elo: Number(currentline[7]),
+        my_characters: [currentline[1]],
+        enemy_characters: [currentline[2]],
+        stages: [currentline[3]],
+        results: [currentline[4] == "Win"],
+        links: [],
+      };
+      matches.push(match);
+    }
+  }
+  console.log(matches);
+  return matches;
+}
 
 /**
  * example of match data
@@ -37,6 +107,7 @@ data_matches_example = {
   bestOf: 3,
   matches: [
     {
+      match_id: 1,
       enemy_name: "some name",
       enemy_elo: 1200,
       my_elo: 1200,
@@ -53,6 +124,7 @@ data_matches_example = {
       my_score: 2,
     },
     {
+      match_id: 2,
       enemy_name: "some name",
       enemy_elo: 1200,
       my_elo: 1300,
@@ -62,62 +134,33 @@ data_matches_example = {
       results: [false, false],
       my_score: 0,
     },
+    {
+      match_id: 3,
+      enemy_name: "some name",
+      enemy_elo: 1200,
+      my_elo: 1300,
+      stages: ["Julesvale"],
+      my_characters: ["Orcane"],
+      enemy_characters: ["Loxodont"],
+      results: [true],
+      my_score: 1,
+    },
+    {
+      match_id: 4,
+      enemy_name: "some name",
+      enemy_elo: 1200,
+      my_elo: 1200,
+      stages: ["Hodojo", "Hyperborean Harbor", "Rock Wall"],
+      my_characters: ["Orcane", "Orcane", "Orcane"],
+      enemy_characters: ["Ranno", "Ranno", "Orcane"],
+      results: [false, true, true],
+      links: [
+        {
+          text: "some text",
+          link: "somelink.com",
+        },
+      ],
+      my_score: 2,
+    },
   ],
 };
-
-function diplay_matches(data) {
-  let html = "";
-  data.matches.forEach((match) => (html += build_match_html(match)));
-  document.getElementById("matchesDisplay").innerHTML = html;
-}
-
-function build_match_html(match) {
-  let html = `
-  <div class="container match p-2">
-    <div class="match-header text-center">
-      <div class="match-header-players">
-        <div class="match-header-players-me">
-          <div class="match-header-players-my-name">Me</div>
-          <div class="match-header-elo-my">${match.my_elo}</div>
-        </div>
-        <div class="match-header-players-enemy">
-          <div class="match-header-players-enemy-name">${match.enemy_name}</div>
-          <div class="match-header-elo-enemy">${match.enemy_elo}</div>
-        </div>
-      </div>
-    </div>
-    <div class="match-body">
-      <div class="match-body-rounds">
-    `;
-  for (let i = 0; i < match.stages.length; i++) {
-    html += `
-        <div class="match-body-round-${
-          match.results[i] ? "win" : "loss"
-        } text-center d-flex flex-nowrap">
-          <img src="assets/${
-            assets_locations_roa2.stages[match.stages[i]]
-          }" class=" mx-auto p-1" style="height:99px ;width:176px" alt="${
-      match.stages[i]
-    }">
-          <img src="assets/${
-            assets_locations_roa2.characters[match.my_characters[i]]
-          }"
-            class="match-body-round-character-my p-1" style="height:100px ;width:100px" alt="${
-              match.my_characters[i]
-            }">
-          <img src="assets/${
-            assets_locations_roa2.characters[match.enemy_characters[i]]
-          }"
-            class="match-body-round-character-enemy p-1" style="height:100px ;width:100px" alt="${
-              match.enemy_characters[i]
-            }">
-        </div>
-    `;
-  }
-  html += `
-      </div>
-    </div>
-  </div>
-  `;
-  return html;
-}

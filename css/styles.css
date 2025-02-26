@@ -18,6 +18,7 @@ a {
 
 .match {
   width: 400px;
+  margin: 5px;
 }
 .match-header-players {
   display: flex;
@@ -33,3 +34,13 @@ a {
 .match-body-round-loss {
   background-color: rgba(255, 132, 132, 0.2);
 }
+
+.match-body-character {
+  height: 100px;
+  width: 100px;
+}
+
+/* .container {
+  border: 1px solid lime;
+  outline: 1px solid lime;
+} */
