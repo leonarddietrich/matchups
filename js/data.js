@@ -30,10 +30,7 @@ function replaceUploadedData() {
     console.log("input element 'uploadMatches' not found");
     return;
   }
-  console.log(input.files);
-
   const file = input.files.length > 0 ? input.files[0] : null;
-  console.log(file);
   if (!file) {
     console.log("no file uploaded");
     return;
@@ -47,8 +44,10 @@ function replaceUploadedData() {
       bestOf: 3,
       matches: matches,
     };
-    console.log("uploaded match data: " + match_data);
     set_match_data(match_data);
+
+    //must be called here because of the async nature of file reading
+    display_matches();
   };
   reader.readAsText(file);
 }
@@ -61,16 +60,13 @@ function parse_csv(csv) {
   const headers = lines[0].split(",");
 
   var i = 1;
-  if (!Number.isInteger(headers[0])) {
-    console.log("header: " + headers);
-  } else {
+  if (Number.isInteger(headers[0])) {
     // no header, start at first line
     i = 0;
   }
   for (; i < lines.length; i++) {
     var currentline = lines[i].split(",");
     currentline = currentline.map((s) => s.trim());
-    console.log(currentline);
     var match = matches.find((m) => m.match_id == currentline[0]);
     if (match) {
       // match already exists, add to it
