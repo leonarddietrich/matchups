@@ -1,32 +1,4 @@
-console.log("chart.js loaded");
-
-const character = [
-  "Clairen",
-  "Etalus",
-  "Fleet",
-  "Forsburn",
-  "Kragg",
-  "Loxodont",
-  "Maypul",
-  "Orcane",
-  "Ranno",
-  "Wrastor",
-  "Zetterburn",
-];
-
-const character_colors = [
-  "#FF0000",
-  "#FFA500",
-  "#FFFF00",
-  "#008000",
-  "#0000FF",
-  "#4B0082",
-  "#EE82EE",
-  "#FF1493",
-  "#FF4500",
-  "#00FFFF",
-  "#FFD700",
-];
+import type { RIVALS } from "./roa2";
 
 var pi_chart_enemys;
 Chart.defaults.color = "#FFFFFF"; // set default color for charts

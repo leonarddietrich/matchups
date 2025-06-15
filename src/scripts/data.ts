@@ -1,7 +1,7 @@
-console.log("data.js loaded");
+import { display_matches } from "./match_display";
 
 // load match data from localStorage
-function get_match_data() {
+export function get_match_data() {
   console.log("get_match_data() called");
   var match_data = JSON.parse(localStorage.getItem("match_data"));
   if (!match_data) {
@@ -15,9 +15,7 @@ function get_match_data() {
 function set_match_data(match_data) {
   console.log("set_match_data() called");
 
-  match_data.matches = match_data.matches.sort(
-    (a, b) => a.match_id > b.match_id
-  );
+  match_data.matches = match_data.matches.sort((a, b) => a.match_id > b.match_id);
   localStorage.setItem("match_data", JSON.stringify(match_data));
 }
 
@@ -25,12 +23,12 @@ function set_match_data(match_data) {
 function replaceUploadedData() {
   console.log("replaceUploadedData() called");
   // get file from file input field
-  const input = document.getElementById("uploadMatches");
+  const input = document.getElementById("uploadMatches") as HTMLInputElement;
   if (!input) {
     console.log("input element 'uploadMatches' not found");
     return;
   }
-  const file = input.files.length > 0 ? input.files[0] : null;
+  const file = input.files && input.files.length > 0 ? input.files[0] : null;
   if (!file) {
     console.log("no file uploaded");
     return;
@@ -97,7 +95,7 @@ function parse_csv(csv) {
 /**
  * example of match data
  */
-data_matches_example = {
+const data_matches_example = {
   game: "roa2",
   type: "singles",
   bestOf: 3,

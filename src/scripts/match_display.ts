@@ -1,6 +1,7 @@
-console.log("match_display.js loaded");
+import { get_match_data } from "./data";
+import { getRivalIconPathByName, getStageIconPathByName } from "./roa2";
 
-function display_matches() {
+export function display_matches() {
   console.log("display_matches() called");
   let match_data = get_match_data();
   display_matches_for_data(match_data);
@@ -9,9 +10,7 @@ function display_matches() {
 var html_match_data_elements = [];
 
 function display_matches_for_data(data) {
-  data.matches.forEach((match) =>
-    html_match_data_elements.push(build_match_html(match))
-  );
+  data.matches.forEach((match) => html_match_data_elements.push(build_match_html(match)));
   display_matches_with_order(true);
 }
 
@@ -50,18 +49,12 @@ function build_match_html(match) {
         <div class="match-body-round-${
           match.results[i] ? "win" : "loss"
         } text-center d-flex flex-nowrap">
-          <img src="assets/${
-            assets_locations_roa2.stages[match.stages[i]]
-          }" class=" mx-auto p-1" style="height:99px ;width:176px" alt="${
-      match.stages[i]
-    }">
-          <img src="assets/${
-            assets_locations_roa2.characters[match.my_characters[i]]
-          }"
+          <img src="${getStageIconPathByName(
+            match.stages[i]
+          )}" class=" mx-auto p-1" style="height:99px ;width:176px" alt="${match.stages[i]}">
+          <img src="${getRivalIconPathByName(match.my_characters[i])}"
             class="match-body-character p-1" alt="${match.my_characters[i]}">
-          <img src="assets/${
-            assets_locations_roa2.characters[match.enemy_characters[i]]
-          }"
+          <img src="${getRivalIconPathByName(match.enemy_characters[i])}"
             class="match-body-character p-1" alt="${match.enemy_characters[i]}">
         </div>
     `;
