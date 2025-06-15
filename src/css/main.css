@@ -1,46 +1,46 @@
 @import "./base.css";
 
 #app {
-  /* max-width: 1280px; */
-  /* margin: 0 0; */
-  /* padding: 2rem; */
-  font-weight: normal;
+	/* max-width: 1280px; */
+	/* margin: 0 0; */
+	/* padding: 2rem; */
+	font-weight: normal;
 }
 
 a,
 .green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.2s;
-  padding: 3px;
+	text-decoration: none;
+	color: hsla(160, 100%, 37%, 1);
+	transition: 0.2s;
+	padding: 3px;
 }
 
 @media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+	a:hover {
+		background-color: hsla(160, 100%, 37%, 0.2);
+	}
 }
 
 @media (min-width: 0px) {
-  body {
-    /* display: flex; */
+	body {
+		/* display: flex; */
 
-    background: linear-gradient(rgba(22, 22, 24, 0.1), rgba(22, 22, 24, 1)),
-      url("../assets/site/background.png");
-    background-position: center center;
-    background-attachment: fixed;
-    background-size: 128px;
-  }
+		background: linear-gradient(rgba(22, 22, 24, 0.1), rgba(22, 22, 24, 1)),
+			url("../assets/site/background.png");
+		background-position: center center;
+		background-attachment: fixed;
+		background-size: 128px;
+	}
 
-  /* #main {  */
-  /* } */
+	/* #main {  */
+	/* } */
 }
 
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 10px;
-  color: white;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	padding: 10px;
+	color: white;
 }

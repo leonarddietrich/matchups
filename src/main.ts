@@ -6,6 +6,6 @@ import store from "./store/store";
 import App from "./App.vue";
 
 createApp(App) //
-  .use(router) //
-  .use(store) //
-  .mount("#app");
+	.use(router) //
+	.use(store) //
+	.mount("#app");

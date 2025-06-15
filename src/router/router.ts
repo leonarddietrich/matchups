@@ -5,14 +5,14 @@ import MatchView from "../views/MatchView.vue";
 import MatchupInsightView from "../views/MatchupInsightView.vue";
 
 const routes = [
-  { path: "/", component: HomeView },
-  { path: "/matches", component: MatchView },
-  { path: "/insights", component: MatchupInsightView },
+	{ path: "/", component: HomeView },
+	{ path: "/matches", component: MatchView },
+	{ path: "/insights", component: MatchupInsightView },
 ];
 
 const router = createRouter({
-  history: createMemoryHistory(),
-  routes,
+	history: createMemoryHistory(),
+	routes,
 });
 
 export default router;
