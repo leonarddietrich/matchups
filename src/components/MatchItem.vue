@@ -3,37 +3,33 @@
 		<div>
 			<div class="match-header" style="">
 				<div>
-					<div>Player Name</div>
-					<div>{{ match.player_elo }}</div>
+					<div>You</div>
+					<div>{{ props.match.playerElo }}</div>
 				</div>
 				<div>
-					<div>{{ match.opponent_name }}</div>
-					<div>{{ match.opponent_elo }}</div>
+					<div>{{ props.match.opponentName }}</div>
+					<div>{{ props.match.opponentElo }}</div>
 				</div>
 			</div>
 		</div>
 		<div class="match-body">
 			<MatchRoundItem
-				v-for="round_index in match.results.length"
-				:key="match.match_id + '_' + round_index"
-				v-bind:stage="match.stages[round_index - 1]"
-				:player="match.player_characters[round_index - 1]"
-				:opponent="match.opponent_characters[round_index - 1]"
-				:result="match.results[round_index - 1]"
+				v-for="round_index in props.match.rounds.length"
+				:key="props.match.id + '_' + round_index"
+				v-bind:stage="props.match.rounds[round_index - 1].stage"
+				:player="props.match.rounds[round_index - 1].playerRival"
+				:opponent="props.match.rounds[round_index - 1].opponentRival"
+				:result="props.match.rounds[round_index - 1].won"
 			/>
 		</div>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import MatchRoundItem from "./MatchRoundItem.vue";
+import MatchRoundItem from './MatchRoundItem.vue'
+import type { Match } from '../scripts/roa2'
 
-defineProps({
-	match: {
-		type: Object,
-		required: true,
-	},
-});
+const props = defineProps<{ match: Match }>()
 </script>
 
 <style scoped lang="css">

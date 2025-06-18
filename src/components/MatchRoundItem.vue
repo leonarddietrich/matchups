@@ -9,56 +9,45 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from "vue";
-import { getRivalIconPathByName, getStageIconPathByName } from "../scripts/roa2.js";
+import { computed } from 'vue'
+import { getRivalIconPathByName, getStageIconPathByName } from '../scripts/roa2.js'
+import type { StageName, RivalName } from '../scripts/roa2.js'
 
-const props = defineProps({
-	stage: {
-		type: String,
-		required: true,
-	},
-	player: {
-		type: String,
-		required: true,
-	},
-	opponent: {
-		type: String,
-		required: true,
-	},
-	result: {
-		type: Boolean,
-		required: true,
-	},
-});
+const props = defineProps<{
+	stage: StageName
+	player: RivalName
+	opponent: RivalName
+	result: boolean
+}>()
 
 const result = computed(() => {
-	return props.result ? "win" : "loss";
-});
+	return props.result ? 'win' : 'loss'
+})
 
 const stageImg = computed(() => {
-	const iconPath = getStageIconPathByName(props.stage);
-	return getPathToImage(props.stage, iconPath);
-});
+	const iconPath = getStageIconPathByName(props.stage)
+	return getPathToImage(props.stage, iconPath)
+})
 const playerImg = computed(() => {
-	const iconPath = getRivalIconPathByName(props.player);
-	return getPathToImage(props.player, iconPath);
-});
+	const iconPath = getRivalIconPathByName(props.player)
+	return getPathToImage(props.player, iconPath)
+})
 const opponentImg = computed(() => {
-	const iconPath = getRivalIconPathByName(props.opponent);
-	return getPathToImage(props.opponent, iconPath);
-});
+	const iconPath = getRivalIconPathByName(props.opponent)
+	return getPathToImage(props.opponent, iconPath)
+})
 
-function getPathToImage(imageName, pathToImage) {
-	if (!pathToImage || pathToImage === "") {
-		console.warn(`Stage not found: ${imageName}`);
-		return { src: "", alt: imageName };
+function getPathToImage(imageName: string, pathToImage: string) {
+	if (!pathToImage || pathToImage === '') {
+		console.warn(`Stage not found: ${imageName}`)
+		return { src: '', alt: imageName }
 	}
-	const host_url = location.protocol + "//" + window.location.host;
-	const asset_path = pathToImage;
+	const host_url = location.protocol + '//' + window.location.host
+	const asset_path = pathToImage
 	return {
 		src: new URL(host_url + asset_path).toString(),
 		alt: imageName,
-	};
+	}
 }
 </script>
 

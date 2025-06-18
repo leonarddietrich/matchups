@@ -1,8 +1,9 @@
 <template>
 	<div class="navbar">
 		<div class="navbar-brand">
-			<img src="@/assets/logo.svg" alt="Logo" class="logo" />
+			<img src="@/assets/site/sports-fight-svgrepo-com.svg" alt="Logo" class="logo" />
 		</div>
+		<MatchCollectionSelector />
 		<nav>
 			<RouterLink to="/">Home</RouterLink>
 			<RouterLink to="/matches">Matches</RouterLink>
@@ -15,7 +16,9 @@
 	</main>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import MatchCollectionSelector from './components/MatchCollectionSelector.vue'
+</script>
 
 <style scoped lang="css">
 main {
