@@ -18,8 +18,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { RIVALS } from '@/scripts/roa2'
-import type {RivalName } from '@/scripts/roa2'
+import { RIVALS } from '@/constants'
+import type { RivalName } from '@/types/roa2Types'
 
 export default defineComponent({
 	props: {

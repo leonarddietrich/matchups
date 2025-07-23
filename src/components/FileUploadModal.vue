@@ -48,8 +48,9 @@ import type {
 	RivalName,
 	StageName,
 	MatchCollection,
-} from '@/scripts/roa2'
-import { useMatchStore } from '../stores/matchStore'
+} from '@/types/roa2Types'
+import { CSV_MATCH_MAPPING } from '@/constants'
+import { useMatchStore } from '@/stores/matchStore'
 
 const matchStore = useMatchStore()
 
@@ -59,17 +60,7 @@ const props = defineProps<{
 	display: boolean
 }>()
 
-const matchDataMapping = {
-	id: 0,
-	playerElo: 1,
-	opponentElo: 2,
-	opponentName: 3,
-	stage: 4,
-	playerRival: 5,
-	opponentRival: 6,
-	won: 7,
-	links: 8, // assuming links is the last column
-}
+const matchDataMapping = CSV_MATCH_MAPPING
 
 const matchCollectionId = ref<number>(0)
 const matchCollectionName = ref<string>('')

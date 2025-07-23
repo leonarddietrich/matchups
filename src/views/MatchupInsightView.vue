@@ -34,7 +34,7 @@ import StageInsight from '@/components/StageInsight.vue'
 import { computed, ref, watch } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import { type RivalName } from '@/scripts/roa2'
+import { type RivalName } from '@/types/roa2Types'
 
 const filterByPlayer = ref(true)
 

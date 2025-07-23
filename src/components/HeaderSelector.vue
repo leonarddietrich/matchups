@@ -22,6 +22,7 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
+import { MATCH_PROPERTIES } from '@/constants'
 
 const props = defineProps<{
 	headers: string[]
@@ -32,17 +33,7 @@ const emit = defineEmits<{
 }>()
 
 // Match properties that need to be mapped
-const matchProperties = [
-	'id',
-	'playerElo',
-	'opponentElo',
-	'opponentName',
-	'stage',
-	'playerRival',
-	'opponentRival',
-	'won',
-	'links',
-] as const
+const matchProperties = MATCH_PROPERTIES
 
 // Array to store the selected header indices for each match property
 const selectedMappings = ref<(number | string)[]>(new Array(matchProperties.length).fill(''))

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { RivalName } from '../scripts/roa2'
+import type { RivalName } from '@/types/roa2Types'
 
 export const useSelectionStore = defineStore('selectionStore', {
 	state: () => ({

@@ -29,12 +29,12 @@
 </template>
 
 <script lang="ts" setup>
-import MatchItem from '../components/MatchItem.vue'
-import BaseModal from '../components/BaseModal.vue'
+import MatchItem from '@/components/MatchItem.vue'
+import BaseModal from '@/components/BaseModal.vue'
 import { ref } from 'vue'
-import { useMatchStore } from '../stores/matchStore'
-import { useSelectionStore } from '../stores/selectionStore'
-import type { MatchCollection } from '../scripts/roa2'
+import { useMatchStore } from '@/stores/matchStore'
+import { useSelectionStore } from '@/stores/selectionStore'
+import type { MatchCollection } from '@/types/roa2Types'
 
 const showUploadModal = ref(false)
 const showAddMatchModal = ref(false)

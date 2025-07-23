@@ -21,9 +21,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import FileUploadModal from '@/components/FileUploadModal.vue'
-import type { MatchCollection, Match } from '../scripts/roa2'
-import { useMatchStore } from '../stores/matchStore'
-import { useSelectionStore } from '../stores/selectionStore'
+import type { MatchCollection, Match } from '@/types/roa2Types'
+import { useMatchStore } from '@/stores/matchStore'
+import { useSelectionStore } from '@/stores/selectionStore'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()

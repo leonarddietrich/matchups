@@ -10,8 +10,8 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { getRivalIconPathByName, getStageIconPathByName } from '../scripts/roa2.js'
-import type { StageName, RivalName } from '../scripts/roa2.js'
+import { getRivalIconPathByName, getStageIconPathByName } from '@/scripts/roa2'
+import type { StageName, RivalName } from '@/types/roa2Types'
 
 const props = defineProps<{
 	stage: StageName
@@ -39,13 +39,12 @@ const opponentImg = computed(() => {
 
 function getPathToImage(imageName: string, pathToImage: string) {
 	if (!pathToImage || pathToImage === '') {
-		console.warn(`Stage not found: ${imageName}`)
+		console.warn(`Image not found: ${imageName}`)
 		return { src: '', alt: imageName }
 	}
-	const host_url = location.protocol + '//' + window.location.host
-	const asset_path = pathToImage
+	// The imported assets are already processed URLs by Vite
 	return {
-		src: new URL(host_url + asset_path).toString(),
+		src: pathToImage,
 		alt: imageName,
 	}
 }

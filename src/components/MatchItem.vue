@@ -27,7 +27,7 @@
 
 <script lang="ts" setup>
 import MatchRoundItem from './MatchRoundItem.vue'
-import type { Match } from '../scripts/roa2'
+import type { Match } from '@/types/roa2Types'
 
 const props = defineProps<{ match: Match }>()
 </script>

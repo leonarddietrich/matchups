@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
-import type { MatchCollection, Match, RankedMatch } from '../scripts/roa2'
-
-const STORAGE_KEY_MATCH_COLLECTION_LIST = 'roa2-match-collection-list'
-const STORAGE_KEY_MATCH_COLLECTION = 'roa2-match-collection-'
+import type { MatchCollection, Match, RankedMatch } from '../types/roa2Types'
+import { STORAGE_KEYS } from '@/constants'
 
 export const useMatchStore = defineStore('matchStore', {
 	state: () => ({
@@ -37,7 +35,7 @@ export const useMatchStore = defineStore('matchStore', {
 		 * This should be called when the application starts to restore previous state.
 		 */
 		loadFromStorage() {
-			const raw = localStorage.getItem(STORAGE_KEY_MATCH_COLLECTION_LIST)
+			const raw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_LIST)
 			if (raw) {
 				try {
 					const parsed = JSON.parse(raw) as number[]
@@ -45,7 +43,7 @@ export const useMatchStore = defineStore('matchStore', {
 						matchCollectionIdList: parsed,
 					})
 					for (const id of this.matchCollectionIdList) {
-						const collectionRaw = localStorage.getItem(STORAGE_KEY_MATCH_COLLECTION + id)
+						const collectionRaw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + id)
 						if (collectionRaw) {
 							try {
 								const collection = JSON.parse(collectionRaw) as MatchCollection
@@ -83,7 +81,7 @@ export const useMatchStore = defineStore('matchStore', {
 		 */
 		saveMatchCollectionListToStorage() {
 			localStorage.setItem(
-				STORAGE_KEY_MATCH_COLLECTION_LIST,
+				STORAGE_KEYS.MATCH_COLLECTION_LIST,
 				JSON.stringify(this.matchCollectionIdList),
 			)
 		},
@@ -97,7 +95,7 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection with id ${collection.id} does not exist.`)
 				return
 			}
-			localStorage.setItem(STORAGE_KEY_MATCH_COLLECTION + collection.id, JSON.stringify(collection))
+			localStorage.setItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.id, JSON.stringify(collection))
 		},
 		/**
 		 * Adds a new match collection to the store and saves it to local storage.
@@ -126,7 +124,7 @@ export const useMatchStore = defineStore('matchStore', {
 			}
 			this.matchCollectionIdList.splice(index, 1)
 			this.matchCollections = this.matchCollections.filter((collection) => collection.id !== id)
-			localStorage.removeItem(STORAGE_KEY_MATCH_COLLECTION + id)
+			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + id)
 			this.saveMatchCollectionListToStorage()
 		},
 		/**
@@ -190,9 +188,9 @@ export const useMatchStore = defineStore('matchStore', {
 		},
 		resetStore() {
 			this.matchCollectionIdList = []
-			localStorage.removeItem(STORAGE_KEY_MATCH_COLLECTION_LIST)
+			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_LIST)
 			this.matchCollections.forEach((collection: MatchCollection) =>
-				localStorage.removeItem(STORAGE_KEY_MATCH_COLLECTION + collection.id),
+				localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.id),
 			)
 			this.matchCollections = []
 		},

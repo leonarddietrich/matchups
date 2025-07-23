@@ -16,8 +16,8 @@
 import { computed } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import type { Round, Stage } from '@/scripts/roa2'
-import { STAGES } from '@/scripts/roa2'
+import type { Round, Stage } from '@/types/roa2Types'
+import { STAGES } from '@/constants'
 
 interface StageInsight extends Stage {
 	timesPlayed: number
