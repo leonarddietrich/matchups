@@ -1,0 +1,38 @@
+@import "./base.css";
+
+#app {
+	font-weight: normal;
+}
+
+a,
+.green {
+	text-decoration: none;
+	color: hsla(160, 100%, 37%, 1);
+	transition: 0.2s;
+	padding: 3px;
+}
+
+@media (hover: hover) {
+	a:hover {
+		background-color: hsla(160, 100%, 37%, 0.2);
+	}
+}
+
+@media (min-width: 0px) {
+	body {
+		background: linear-gradient(rgba(22, 22, 24, 0.1), rgba(22, 22, 24, 1)),
+			url("@/assets/site/background.png");
+		background-position: center center;
+		background-attachment: fixed;
+		background-size: 128px;
+	}
+}
+
+.navbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	padding: 10px;
+	color: white;
+}

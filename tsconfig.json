@@ -1,0 +1,25 @@
+{
+	"files": [],
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		},
+		{
+			"path": "./tsconfig.app.json"
+		},
+		{
+			"path": "./tsconfig.vitest.json"
+		}
+	],
+	"lib": ["node"],
+	"compilerOptions": {
+		"types": ["node"],
+		"moduleResolution": "node",
+		"typeRoots": ["./node_modules/@types"],
+		"allowJs": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		}
+	}
+}
