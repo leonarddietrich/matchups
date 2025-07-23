@@ -1,9 +1,6 @@
 @import "./base.css";
 
 #app {
-	/* max-width: 1280px; */
-	/* margin: 0 0; */
-	/* padding: 2rem; */
 	font-weight: normal;
 }
 
@@ -23,10 +20,8 @@ a,
 
 @media (min-width: 0px) {
 	body {
-		/* display: flex; */
-
 		background: linear-gradient(rgba(22, 22, 24, 0.1), rgba(22, 22, 24, 1)),
-			url("../assets/site/background.png");
+			url("@/assets/site/background.png");
 		background-position: center center;
 		background-attachment: fixed;
 		background-size: 128px;

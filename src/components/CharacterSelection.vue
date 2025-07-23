@@ -3,10 +3,10 @@
 		<div
 			v-for="rival in RIVALS"
 			:key="rival.name"
-			@click="selectCaracter(rival)"
+			@click="selectCharacter(rival.name)"
 			:class="[
 				'character-selection',
-				{ selected: selected && selected.name === rival.name, disabled: !isSelectable(rival) },
+				{ selected: selectedRival === rival.name, disabled: !isSelectable(rival.name) },
 			]"
 		>
 			<div class="character-image">
@@ -19,48 +19,39 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { RIVALS } from '@/scripts/roa2'
-import type { Rival, RivalName } from '@/scripts/roa2'
+import type {RivalName } from '@/scripts/roa2'
 
 export default defineComponent({
 	props: {
 		allowedRivals: {
-			type: Array<RivalName>,
+			type: Array as () => RivalName[],
 			required: true,
-			validator: (value) =>
-				Array.isArray(value) &&
-				value.every((rivalName) => RIVALS.some((r) => r.name === rivalName)),
 		},
 		selectedRival: {
-			type: String,
-			required: false,
-			default: null,
-			validator: (value) => value === null || RIVALS.some((rival) => rival.name === value),
+			type: [String, null] as unknown as () => RivalName | null,
+			required: true,
+			validator: (value: unknown) => typeof value === 'string' || value === null,
 		},
 	},
 	emits: ['characterSelected'],
 	methods: {
-		selectCaracter(rival: Rival) {
-			if (!this.isSelectable(rival)) return
-			this.selected = rival
-			this.$emit('characterSelected', rival.name)
+		selectCharacter(rivalName: RivalName) {
+			if (!this.isSelectable(rivalName)) return
+			this.$emit('characterSelected', rivalName)
 		},
-		isSelectable(rival: Rival) {
-			return this.allowedRivals.includes(rival.name)
+		isSelectable(rivalName: RivalName) {
+			return this.allowedRivals.includes(rivalName)
 		},
 	},
 	data() {
 		return {
 			RIVALS,
-			selected: null as Rival | null,
 		}
 	},
 	created() {
-		if (this.selectedRival) {
-			const rival = this.RIVALS.find((r) => r.name === this.selectedRival)
-			if (rival) this.selected = rival
-		} else {
-			const fallback = this.RIVALS.find((r) => r.name === this.allowedRivals[0])
-			if (fallback) this.selected = fallback
+		if (!this.selectedRival) {
+			const fallback = RIVALS.find((r) => r.name === this.allowedRivals[0])
+			if (fallback) this.$emit('characterSelected', fallback.name)
 		}
 	},
 })
@@ -108,7 +99,7 @@ export default defineComponent({
 	box-sizing: border-box;
 }
 .character-selection.disabled {
-	opacity: 0.5;
+	opacity: 0.2;
 	pointer-events: none;
 }
 </style>

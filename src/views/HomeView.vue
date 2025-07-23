@@ -11,16 +11,24 @@
 
 		<button style="color: yellow" @click="useExampleMatches">use example matches</button>
 		<button style="color: red" @click="resetStore">reset matches</button>"
+		<button style="color: green" @click="toggleDisplayUploadModal">upload matches</button>
+
+		<FileUploadModal :display="showUploadModal" @closeFileUploadModal="toggleDisplayUploadModal()">
+		</FileUploadModal>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import FileUploadModal from '@/components/FileUploadModal.vue'
 import type { MatchCollection, Match } from '../scripts/roa2'
 import { useMatchStore } from '../stores/matchStore'
 import { useSelectionStore } from '../stores/selectionStore'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
+
+const showUploadModal = ref(false)
 
 const exampleMatches: Match[] = [
 	{
@@ -144,6 +152,10 @@ function resetStore() {
 	selectionStore.resetMatchCollectionId()
 	selectionStore.resetCharacterSelection()
 	alert('Matches and selections have been reset.')
+}
+
+function toggleDisplayUploadModal() {
+	showUploadModal.value = !showUploadModal.value
 }
 </script>
 

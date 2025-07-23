@@ -1,7 +1,7 @@
 <template>
 	<Transition name="modal">
 		<div v-if="show" class="modal-mask" @click="$emit('close')">
-			<div class="modal-container">
+			<div class="modal-container" @click.stop>
 				<div class="modal-header">
 					<slot name="header">
 						<h3>Modal Header</h3>
@@ -23,18 +23,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
 export default defineComponent({
-	name: "BaseModal",
+	name: 'BaseModal',
 	props: {
 		show: {
 			type: Boolean,
 			required: true,
 		},
 	},
-	emits: ["close"],
-});
+	emits: ['close'],
+})
 </script>
 
 <style scoped>
