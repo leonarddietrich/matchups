@@ -4,11 +4,11 @@
 			<div class="match-header" style="">
 				<div>
 					<div>You</div>
-					<div>{{ props.match.playerElo }}</div>
+					<div>{{ props.match.playerElo ? props.match.playerElo : 'Unranked' }}</div>
 				</div>
 				<div>
 					<div>{{ props.match.opponentName }}</div>
-					<div>{{ props.match.opponentElo }}</div>
+					<div>{{ props.match.opponentElo ? props.match.opponentElo : 'Unranked' }}</div>
 				</div>
 			</div>
 		</div>
