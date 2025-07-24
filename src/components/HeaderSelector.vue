@@ -3,12 +3,15 @@
 		<h4>Map CSV Headers to Match Properties</h4>
 		<div class="mapping-grid">
 			<div v-for="(property, index) in matchProperties" :key="property" class="mapping-row">
-				<label :for="`select-${property}`" class="property-label"> {{ property }}: </label>
+				<label :for="`select-${property}`" class="property-label">
+					{{ property }}{{ isPropertyRequired(property) ? ' *' : ' (optional)' }}:
+				</label>
 				<select
 					:id="`select-${property}`"
 					v-model="selectedMappings[index]"
 					@change="emitMappings"
 					class="header-select"
+					:class="{ 'optional-field': !isPropertyRequired(property) }"
 				>
 					<option value="">-- Select Header --</option>
 					<option v-for="(header, headerIndex) in headers" :key="headerIndex" :value="headerIndex">
@@ -23,9 +26,11 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { MATCH_PROPERTIES } from '@/constants'
+import type { MatchType } from '@/types/roa2Types'
 
 const props = defineProps<{
 	headers: string[]
+	collectionType?: MatchType
 }>()
 
 const emit = defineEmits<{
@@ -37,6 +42,16 @@ const matchProperties = MATCH_PROPERTIES
 
 // Array to store the selected header indices for each match property
 const selectedMappings = ref<(number | string)[]>(new Array(matchProperties.length).fill(''))
+
+// Determine if a property is required based on collection type
+function isPropertyRequired(property: string): boolean {
+	const requiredFields = ['id', 'opponentName', 'stage', 'playerRival', 'opponentRival', 'won']
+	// ELO fields are only required for ranked collections
+	if (props.collectionType === 'ranked') {
+		requiredFields.push('playerElo', 'opponentElo')
+	}
+	return requiredFields.includes(property)
+}
 
 function emitMappings() {
 	// Convert to numbers and filter out empty selections
@@ -83,5 +98,14 @@ watch(
 	padding: 0.25rem;
 	border: 1px solid #ccc;
 	border-radius: 4px;
+}
+
+.optional-field {
+	opacity: 0.7;
+	border-style: dashed;
+}
+
+.property-label {
+	font-size: 0.9rem;
 }
 </style>

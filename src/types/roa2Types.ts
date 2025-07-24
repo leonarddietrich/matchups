@@ -90,3 +90,14 @@ export interface MatchCollection {
 	description: string
 	matches: Match[] | RankedMatch[]
 }
+
+export type MatchResult = 'wins' | 'losses'
+export type DifficultyLevel = 'easy' | 'equal' | 'hard' | 'unknown'
+
+export interface MatchFilters {
+	stages?: StageName[]
+	playerCharacter?: RivalName[]
+	opponentCharacter?: RivalName[]
+	results?: MatchResult
+	difficulty?: DifficultyLevel
+}

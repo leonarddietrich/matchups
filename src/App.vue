@@ -22,8 +22,7 @@ import MatchCollectionSelector from './components/MatchCollectionSelector.vue'
 
 <style scoped lang="css">
 main {
-	display: flex;
-	place-items: center;
+	display: block;
 	margin: 20px;
 }
 

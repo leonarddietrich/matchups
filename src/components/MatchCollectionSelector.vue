@@ -32,5 +32,14 @@ select {
 	width: 300px;
 	padding: 0.5em;
 	font-size: 1em;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #42b983;
+	border: 1px solid #42b983;
+	border-radius: 4px;
+}
+
+select option {
+	background-color: rgba(0, 0, 0, 0.9);
+	color: #42b983;
 }
 </style>

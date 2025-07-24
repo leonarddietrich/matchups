@@ -1,9 +1,22 @@
 <template>
 	<div>
 		<h1>Matchup Insight</h1>
-		<button id="filterByPlayer" @click="filterByPlayer=!filterByPlayer">
-			{{ filterByPlayer ? 'Filter by Opponent' : 'Filter by Player' }}
-		</button>
+
+		<!-- Improved Filter Toggle -->
+		<div class="filter-mode-toggle">
+			<span class="toggle-label">Filter by:</span>
+			<div class="toggle-switch" @click="filterByPlayer = !filterByPlayer">
+				<div class="toggle-track" :class="{ active: !filterByPlayer }">
+					<div class="toggle-option left" :class="{ active: filterByPlayer }">
+						<span class="toggle-text">Player</span>
+					</div>
+					<div class="toggle-option right" :class="{ active: !filterByPlayer }">
+						<span class="toggle-text">Opponent</span>
+					</div>
+					<div class="toggle-slider" :class="{ 'slide-right': !filterByPlayer }"></div>
+				</div>
+			</div>
+		</div>
 
 		<div class="selectors">
 			<CharacterSelection
@@ -139,15 +152,105 @@ function updateOpponentRival(newSelectedRival: RivalName | null) {
 </script>
 
 <style scoped>
+.filter-mode-toggle {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin: 1.5rem 0;
+	justify-content: center;
+}
+
+.toggle-label {
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.8);
+	font-size: 1rem;
+}
+
+.toggle-switch {
+	cursor: pointer;
+	user-select: none;
+}
+
+.toggle-track {
+	position: relative;
+	width: 240px;
+	height: 50px;
+	background-color: rgba(0, 0, 0, 0.6);
+	border-radius: 25px;
+	display: flex;
+	overflow: hidden;
+	transition: all 0.3s ease;
+	border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.toggle-track.active {
+	border-color: #42b983;
+}
+
+.toggle-option {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	position: relative;
+	z-index: 2;
+	transition: all 0.3s ease;
+	padding: 0.5rem;
+}
+
+.toggle-option.active {
+	color: white;
+	font-weight: bold;
+}
+
+.toggle-option:not(.active) {
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.toggle-icon {
+	font-size: 1.2rem;
+}
+
+.toggle-text {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.toggle-slider {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 50%;
+	height: 100%;
+	background: linear-gradient(135deg, #42b983, #369870);
+	border-radius: 25px;
+	transition: transform 0.3s ease;
+	z-index: 1;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-slider.slide-right {
+	transform: translateX(100%);
+}
+
+.toggle-switch:hover .toggle-track {
+	border-color: #42b983;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+
 .selectors {
 	display: grid;
 	grid-template-columns: 1fr 2px 1fr;
 	width: 100%;
 	height: 100%;
+	margin-top: 2rem;
 }
+
 .primarySelector {
 	border: 2px solid #42b983;
 }
+
 .secondarySelector {
 	border: 2px solid transparent;
 }

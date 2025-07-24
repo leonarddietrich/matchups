@@ -112,6 +112,20 @@ export const useMatchStore = defineStore('matchStore', {
 			this.saveToStorage()
 		},
 		/**
+		 * Updates an existing match collection in the store and saves it to local storage.
+		 * This is used to modify an existing match collection (e.g., adding a new match).
+		 * @param collection : MatchCollection - The updated match collection.
+		 */
+		updateMatchCollection(collection: MatchCollection) {
+			const index = this.matchCollections.findIndex(c => c.id === collection.id)
+			if (index === -1) {
+				console.warn(`Match collection with id ${collection.id} does not exist.`)
+				return
+			}
+			this.matchCollections[index] = collection
+			this.saveToStorage()
+		},
+		/**
 		 * Retrieves a match collection by its ID.
 		 * @param id : number - The ID of the match collection to retrieve.
 		 * @returns MatchCollection | undefined - The match collection if found, otherwise undefined.

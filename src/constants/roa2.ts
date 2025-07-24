@@ -217,3 +217,9 @@ export const STAGES: Stage[] = [
 
 /** List of all rival elements */
 export const RIVAL_ELEMENTS: readonly RivalElement[] = ['Fire', 'Water', 'Air', 'Earth'] as const;
+
+/** List of all rival names */
+export const RIVAL_NAMES = RIVALS.map(rival => rival.name);
+
+/** List of all stage names */
+export const STAGE_NAMES = STAGES.map(stage => stage.name);
