@@ -12,12 +12,11 @@
 						<input
 							id="player-elo"
 							type="number"
-							placeholder="Unranked"
+							placeholder="-1 for unranked"
 							v-model.number="playerElo"
 							class="form-input"
-							min="0"
 						/>
-						<span class="helper-text">Leave empty for unranked</span>
+						<span class="helper-text">Enter -1 or negative number for unranked</span>
 					</div>
 
 					<div v-if="isRankedCollection" class="form-group">
@@ -25,12 +24,11 @@
 						<input
 							id="opponent-elo"
 							type="number"
-							placeholder="Unranked"
+							placeholder="-1 for unranked"
 							v-model.number="opponentElo"
 							class="form-input"
-							min="0"
 						/>
-						<span class="helper-text">Leave empty for unranked</span>
+						<span class="helper-text">Enter -1 or negative number for unranked</span>
 					</div>
 
 					<div class="form-group">
@@ -320,16 +318,16 @@ function saveMatch() {
 	const newMatch: Match | RankedMatch = isRankedCollection.value
 		? {
 			id: generateNextMatchId(),
-			playerElo: playerElo.value || 0,
-			opponentElo: opponentElo.value || 0,
+			playerElo: (!playerElo.value || playerElo.value < 0) ? -1 : playerElo.value,
+			opponentElo: (!opponentElo.value || opponentElo.value < 0) ? -1 : opponentElo.value,
 			opponentName: opponentName.value.trim(),
 			rounds: [...rounds.value],
 			links: links.value.filter(link => link.text.trim() !== '' || link.link.trim() !== '')
 		} as RankedMatch
 		: {
 			id: generateNextMatchId(),
-			playerElo: 0,
-			opponentElo: 0,
+			playerElo: -1,
+			opponentElo: -1,
 			opponentName: opponentName.value.trim(),
 			rounds: [...rounds.value],
 			links: links.value.filter(link => link.text.trim() !== '' || link.link.trim() !== '')

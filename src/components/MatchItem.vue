@@ -4,12 +4,12 @@
 			<div class="match-header clickable" @click="openModifyModal">
 				<div>
 					<div>You</div>
-					<div v-if="isRankedCollection">{{ props.match.playerElo ? props.match.playerElo : 'Unranked' }}</div>
+					<div v-if="isRankedCollection">{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
 					<div v-else>{{ props.match.opponentName }}</div>
 				</div>
 				<div>
 					<div>{{ props.match.opponentName }}</div>
-					<div v-if="isRankedCollection">{{ props.match.opponentElo ? props.match.opponentElo : 'Unranked' }}</div>
+					<div v-if="isRankedCollection">{{ props.match.opponentElo === -1 ? 'Unranked' : props.match.opponentElo }}</div>
 				</div>
 			</div>
 		</div>

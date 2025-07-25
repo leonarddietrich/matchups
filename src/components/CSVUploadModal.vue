@@ -427,8 +427,13 @@ function buildCollection(): MatchCollection | void {
 
 			// Create appropriate match type based on collection type
 			if (isRanked) {
-				const playerElo: number = parseInt(rows[index][headerMappings.value[matchDataMapping.playerElo]]) || 1000
-				const opponentElo: number = parseInt(rows[index][headerMappings.value[matchDataMapping.opponentElo]]) || 1000
+				const playerEloRaw: number = parseInt(rows[index][headerMappings.value[matchDataMapping.playerElo]])
+				const opponentEloRaw: number = parseInt(rows[index][headerMappings.value[matchDataMapping.opponentElo]])
+
+				// Convert negative numbers or NaN to -1 (unranked), otherwise use the parsed value or default to 1000
+				const playerElo: number = isNaN(playerEloRaw) || playerEloRaw < 0 ? -1 : playerEloRaw
+				const opponentElo: number = isNaN(opponentEloRaw) || opponentEloRaw < 0 ? -1 : opponentEloRaw
+
 				match = {
 					id: id,
 					playerElo: playerElo,
@@ -440,8 +445,8 @@ function buildCollection(): MatchCollection | void {
 			} else {
 				match = {
 					id: id,
-					playerElo: 0, // Non-ranked matches have 0 ELO
-					opponentElo: 0,
+					playerElo: -1, // Non-ranked matches have -1 ELO (unranked)
+					opponentElo: -1,
 					opponentName: opponentName,
 					rounds: [],
 					links: links,

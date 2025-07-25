@@ -45,15 +45,13 @@ export function roundMatchesFilters(round: Round, filters: MatchFilters): boolea
 export function matchMeetsDifficultyFilter(match: Match, difficulty?: string): boolean {
 	if (!difficulty) return true
 
-	const hasPlayerElo = match.playerElo !== undefined && match.playerElo !== null
-	const hasOpponentElo = match.opponentElo !== undefined && match.opponentElo !== null
+	const hasPlayerElo = match.playerElo !== undefined && match.playerElo !== null && match.playerElo !== -1
+	const hasOpponentElo = match.opponentElo !== undefined && match.opponentElo !== null && match.opponentElo !== -1
 
-	// Unknown difficulty: show matches where player OR opponent has no ELO
 	if (difficulty === 'unknown') {
 		return !hasPlayerElo || !hasOpponentElo
 	}
 
-	// For other difficulties, both players must have ELO data
 	if (!hasPlayerElo || !hasOpponentElo) {
 		return false
 	}

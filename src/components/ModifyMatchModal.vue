@@ -11,14 +11,13 @@
 					<div v-if="isRankedCollection" class="form-group">
 						<label for="player-elo">Player Elo</label>
 						<div class="old-new-container">
-							<span class="old-value">old: {{ originalMatch?.playerElo || 'Unranked' }}</span>
+							<span class="old-value">old: {{ !originalMatch?.playerElo || originalMatch?.playerElo < 0 ? 'Unranked' : originalMatch?.playerElo }}</span>
 							<input
 								id="player-elo"
 								type="number"
-								placeholder="Unranked"
+								placeholder="-1 for unranked"
 								v-model.number="modifiedMatch.playerElo"
 								class="form-input"
-								min="0"
 							/>
 						</div>
 					</div>
@@ -26,14 +25,13 @@
 					<div v-if="isRankedCollection" class="form-group">
 						<label for="opponent-elo">Opponent Elo</label>
 						<div class="old-new-container">
-							<span class="old-value">old: {{ originalMatch?.opponentElo || 'Unranked' }}</span>
+							<span class="old-value">old: {{ !originalMatch?.opponentElo || originalMatch?.opponentElo < 0 ? 'Unranked' : originalMatch?.opponentElo }}</span>
 							<input
 								id="opponent-elo"
 								type="number"
-								placeholder="Unranked"
+								placeholder="-1 for unranked"
 								v-model.number="modifiedMatch.opponentElo"
 								class="form-input"
-								min="0"
 							/>
 						</div>
 					</div>
@@ -57,30 +55,28 @@
 					<div v-if="isRankedCollection" class="elo-section">
 						<div class="form-row">
 							<div class="form-group">
-								<label for="player-elo">Player ELO</label>
+								<label for="player-elo-alt">Player ELO</label>
 								<div class="old-new-container">
-									<span class="old-value">old: {{ originalMatch?.playerElo || 'N/A' }}</span>
+									<span class="old-value">old: {{ originalMatch?.playerElo === -1 ? 'Unranked' : originalMatch?.playerElo || 'N/A' }}</span>
 									<input
-										id="player-elo"
+										id="player-elo-alt"
 										type="number"
-										placeholder="1000"
+										placeholder="-1 for unranked"
 										v-model.number="modifiedMatch.playerElo"
 										class="form-input"
-										min="0"
 									/>
 								</div>
 							</div>
 							<div class="form-group">
-								<label for="opponent-elo">Opponent ELO</label>
+								<label for="opponent-elo-alt">Opponent ELO</label>
 								<div class="old-new-container">
-									<span class="old-value">old: {{ originalMatch?.opponentElo || 'N/A' }}</span>
+									<span class="old-value">old: {{ originalMatch?.opponentElo === -1 ? 'Unranked' : originalMatch?.opponentElo || 'N/A' }}</span>
 									<input
-										id="opponent-elo"
+										id="opponent-elo-alt"
 										type="number"
-										placeholder="1000"
+										placeholder="-1 for unranked"
 										v-model.number="modifiedMatch.opponentElo"
 										class="form-input"
-										min="0"
 									/>
 								</div>
 							</div>
@@ -408,8 +404,8 @@ function saveMatch() {
 	const finalMatch = isRankedCollection.value
 		? {
 			...modifiedMatch.value,
-			playerElo: modifiedMatch.value.playerElo || 1000,
-			opponentElo: modifiedMatch.value.opponentElo || 1000,
+			playerElo: (!modifiedMatch.value.playerElo || modifiedMatch.value.playerElo < 0) ? -1 : modifiedMatch.value.playerElo,
+			opponentElo: (!modifiedMatch.value.opponentElo || modifiedMatch.value.opponentElo < 0) ? -1 : modifiedMatch.value.opponentElo,
 			links: modifiedMatch.value.links.filter(link => link.text.trim() !== '' || link.link.trim() !== '')
 		} as RankedMatch
 		: {

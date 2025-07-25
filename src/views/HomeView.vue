@@ -79,18 +79,6 @@ function getNextAvailableCollectionId(): number {
 	return Math.max(...existingIds) + 1
 }
 
-function getNextAvailableMatchId(): number {
-	let maxId = 0
-	for (const collection of matchStore.matchCollections) {
-		for (const match of collection.matches) {
-			if (match.id > maxId) {
-				maxId = match.id
-			}
-		}
-	}
-	return maxId + 1
-}
-
 const showAddCollectionModal = ref(false)
 const showUploadModal = ref(false)
 const showJsonUploadModal = ref(false)
@@ -102,8 +90,7 @@ const exampleCollectionExists = computed(() => {
 
 function useExampleMatches() {
 	const collectionId = getNextAvailableCollectionId()
-	const startMatchId = getNextAvailableMatchId()
-	const exampleCollection = generateExampleCollectionData(collectionId, startMatchId)
+	const exampleCollection = generateExampleCollectionData(collectionId)
 	matchStore.addMatchCollection(exampleCollection)
 }
 
