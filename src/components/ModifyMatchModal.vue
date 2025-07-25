@@ -11,12 +11,13 @@
 					<div v-if="isRankedCollection" class="form-group">
 						<label for="player-elo">Player Elo</label>
 						<div class="old-new-container">
-							<span class="old-value">old: {{ !originalMatch?.playerElo || originalMatch?.playerElo < 0 ? 'Unranked' : originalMatch?.playerElo }}</span>
+							<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'playerElo') }}</span>
 							<input
 								id="player-elo"
 								type="number"
 								placeholder="-1 for unranked"
-								v-model.number="modifiedMatch.playerElo"
+								:value="getEloValue(modifiedMatch, 'playerElo') || 0"
+								@input="setEloValue(modifiedMatch, 'playerElo', Number(($event.target as HTMLInputElement).value))"
 								class="form-input"
 							/>
 						</div>
@@ -25,12 +26,13 @@
 					<div v-if="isRankedCollection" class="form-group">
 						<label for="opponent-elo">Opponent Elo</label>
 						<div class="old-new-container">
-							<span class="old-value">old: {{ !originalMatch?.opponentElo || originalMatch?.opponentElo < 0 ? 'Unranked' : originalMatch?.opponentElo }}</span>
+							<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'opponentElo') }}</span>
 							<input
 								id="opponent-elo"
 								type="number"
 								placeholder="-1 for unranked"
-								v-model.number="modifiedMatch.opponentElo"
+								:value="getEloValue(modifiedMatch, 'opponentElo') || 0"
+								@input="setEloValue(modifiedMatch, 'opponentElo', Number(($event.target as HTMLInputElement).value))"
 								class="form-input"
 							/>
 						</div>
@@ -57,12 +59,13 @@
 							<div class="form-group">
 								<label for="player-elo-alt">Player ELO</label>
 								<div class="old-new-container">
-									<span class="old-value">old: {{ originalMatch?.playerElo === -1 ? 'Unranked' : originalMatch?.playerElo || 'N/A' }}</span>
+									<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'playerElo') }}</span>
 									<input
 										id="player-elo-alt"
 										type="number"
 										placeholder="-1 for unranked"
-										v-model.number="modifiedMatch.playerElo"
+										:value="getEloValue(modifiedMatch, 'playerElo') || 0"
+										@input="setEloValue(modifiedMatch, 'playerElo', Number(($event.target as HTMLInputElement).value))"
 										class="form-input"
 									/>
 								</div>
@@ -70,12 +73,13 @@
 							<div class="form-group">
 								<label for="opponent-elo-alt">Opponent ELO</label>
 								<div class="old-new-container">
-									<span class="old-value">old: {{ originalMatch?.opponentElo === -1 ? 'Unranked' : originalMatch?.opponentElo || 'N/A' }}</span>
+									<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'opponentElo') }}</span>
 									<input
 										id="opponent-elo-alt"
 										type="number"
 										placeholder="-1 for unranked"
-										v-model.number="modifiedMatch.opponentElo"
+										:value="getEloValue(modifiedMatch, 'opponentElo') || 0"
+										@input="setEloValue(modifiedMatch, 'opponentElo', Number(($event.target as HTMLInputElement).value))"
 										class="form-input"
 									/>
 								</div>
@@ -271,6 +275,32 @@ import { RIVAL_NAMES, STAGE_NAMES } from '@/constants/roa2'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 
+// Type guards
+function isRankedMatch(match: Match | RankedMatch): match is RankedMatch {
+	return 'playerElo' in match && 'opponentElo' in match
+}
+
+// Helper function to get ELO value safely
+function getEloValue(match: Match | RankedMatch | null, field: 'playerElo' | 'opponentElo'): number | undefined {
+	if (!match || !isRankedMatch(match)) return undefined
+	return match[field]
+}
+
+// Helper function to display ELO value safely
+function getEloDisplayValue(match: Match | RankedMatch | null, field: 'playerElo' | 'opponentElo'): string {
+	const value = getEloValue(match, field)
+	if (value === undefined || value === null) return 'N/A'
+	if (value === -1) return 'Unranked'
+	return value.toString()
+}
+
+// Helper function to set ELO value safely
+function setEloValue(match: Match | RankedMatch, field: 'playerElo' | 'opponentElo', value: number): void {
+	if (isRankedMatch(match)) {
+		match[field] = value
+	}
+}
+
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
 
@@ -282,13 +312,11 @@ const props = defineProps<{
 }>()
 
 // Keep original match for comparison
-const originalMatch = ref<Match | null>(null)
+const originalMatch = ref<Match | RankedMatch | null>(null)
 
 // Modified match data (working copy)
-const modifiedMatch = ref<Match>({
+const modifiedMatch = ref<Match | RankedMatch>({
 	id: 0,
-	playerElo: 0,
-	opponentElo: 0,
 	opponentName: '',
 	rounds: [],
 	links: []
@@ -404,8 +432,8 @@ function saveMatch() {
 	const finalMatch = isRankedCollection.value
 		? {
 			...modifiedMatch.value,
-			playerElo: (!modifiedMatch.value.playerElo || modifiedMatch.value.playerElo < 0) ? -1 : modifiedMatch.value.playerElo,
-			opponentElo: (!modifiedMatch.value.opponentElo || modifiedMatch.value.opponentElo < 0) ? -1 : modifiedMatch.value.opponentElo,
+			playerElo: (getEloValue(modifiedMatch.value, 'playerElo') == null || getEloValue(modifiedMatch.value, 'playerElo')! < 0) ? -1 : getEloValue(modifiedMatch.value, 'playerElo')!,
+			opponentElo: (getEloValue(modifiedMatch.value, 'opponentElo') == null || getEloValue(modifiedMatch.value, 'opponentElo')! < 0) ? -1 : getEloValue(modifiedMatch.value, 'opponentElo')!,
 			links: modifiedMatch.value.links.filter(link => link.text.trim() !== '' || link.link.trim() !== '')
 		} as RankedMatch
 		: {
@@ -488,8 +516,6 @@ function resetForm() {
 	originalMatch.value = null
 	modifiedMatch.value = {
 		id: 0,
-		playerElo: 0,
-		opponentElo: 0,
 		opponentName: '',
 		rounds: [],
 		links: []

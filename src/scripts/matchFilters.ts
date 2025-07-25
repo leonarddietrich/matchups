@@ -1,4 +1,4 @@
-import type { Match, Round, MatchFilters } from '@/types/roa2Types'
+import type { Match, RankedMatch, Round, MatchFilters } from '@/types/roa2Types'
 
 /**
  * Checks if a round matches the given filter criteria
@@ -40,9 +40,10 @@ export function roundMatchesFilters(round: Round, filters: MatchFilters): boolea
 }
 
 /**
- * Checks if a match meets the difficulty criteria
+ * Checks if a RankedMatch meets the difficulty criteria
+ * Only applies to RankedMatch objects
  */
-export function matchMeetsDifficultyFilter(match: Match, difficulty?: string): boolean {
+export function matchMeetsDifficultyFilter(match: RankedMatch, difficulty?: string): boolean {
 	if (!difficulty) return true
 
 	const hasPlayerElo = match.playerElo !== undefined && match.playerElo !== null && match.playerElo !== -1
@@ -80,13 +81,15 @@ export function filterRoundsInMatch(match: Match, filters: MatchFilters): Round[
 /**
  * Checks if a match should be displayed based on filters
  * A match is displayed if:
- * 1. It meets the difficulty criteria
+ * 1. For RankedMatch: It meets the difficulty criteria
  * 2. It has at least one round that matches the filter criteria
  */
-export function matchShouldBeDisplayed(match: Match, filters: MatchFilters): boolean {
-	// Check difficulty filter first
-	if (!matchMeetsDifficultyFilter(match, filters.difficulty)) {
-		return false
+export function matchShouldBeDisplayed(match: Match | RankedMatch, filters: MatchFilters): boolean {
+	// Check difficulty filter only for RankedMatch objects
+	if ('playerElo' in match && 'opponentElo' in match) {
+		if (!matchMeetsDifficultyFilter(match as RankedMatch, filters.difficulty)) {
+			return false
+		}
 	}
 
 	// Check if any round matches the filters
@@ -97,7 +100,7 @@ export function matchShouldBeDisplayed(match: Match, filters: MatchFilters): boo
 /**
  * Filters matches based on the given criteria
  */
-export function filterMatches(matches: Match[], filters: MatchFilters): Match[] {
+export function filterMatches(matches: Match[] | RankedMatch[], filters: MatchFilters): Match[] {
 	return matches.filter(match => matchShouldBeDisplayed(match, filters))
 }
 

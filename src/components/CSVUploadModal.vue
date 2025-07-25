@@ -430,7 +430,6 @@ function buildCollection(): MatchCollection | void {
 				const playerEloRaw: number = parseInt(rows[index][headerMappings.value[matchDataMapping.playerElo]])
 				const opponentEloRaw: number = parseInt(rows[index][headerMappings.value[matchDataMapping.opponentElo]])
 
-				// Convert negative numbers or NaN to -1 (unranked), otherwise use the parsed value or default to 1000
 				const playerElo: number = isNaN(playerEloRaw) || playerEloRaw < 0 ? -1 : playerEloRaw
 				const opponentElo: number = isNaN(opponentEloRaw) || opponentEloRaw < 0 ? -1 : opponentEloRaw
 
@@ -445,8 +444,6 @@ function buildCollection(): MatchCollection | void {
 			} else {
 				match = {
 					id: id,
-					playerElo: -1, // Non-ranked matches have -1 ELO (unranked)
-					opponentElo: -1,
 					opponentName: opponentName,
 					rounds: [],
 					links: links,

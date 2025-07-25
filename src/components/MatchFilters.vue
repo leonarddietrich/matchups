@@ -64,7 +64,7 @@
 				</div>
 
 				<!-- Difficulty Filter -->
-				<div v-if="filters.difficulty" class="filter-category">
+				<div v-if="filters.difficulty && isRankedCollection" class="filter-category">
 					<span class="category-label">Difficulty:</span>
 					<div class="category-items">
 						<span class="filter-tag">
@@ -170,7 +170,7 @@
 			</div>
 
 			<!-- Difficulty Filter -->
-			<div class="filter-group">
+			<div v-if="isRankedCollection" class="filter-group">
 				<label>Difficulty:</label>
 				<div class="radio-group">
 					<label class="radio-label">
@@ -238,15 +238,32 @@
 import type { MatchFilters, StageName, RivalName, MatchResult, DifficultyLevel } from '@/types/roa2Types'
 import { RIVAL_NAMES, STAGE_NAMES } from '@/constants/roa2'
 import { getStageIconPathByName, getRivalIconPathByName } from '@/scripts/roa2'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{
 	filters: MatchFilters
+	collectionType?: string
 }>()
 
 const emit = defineEmits<{
 	updateFilters: [filters: MatchFilters]
 }>()
+
+// Check if current collection is ranked
+const isRankedCollection = computed(() => {
+	return props.collectionType === 'ranked'
+})
+
+// Clear difficulty filter when switching to non-ranked collection
+watch(() => props.collectionType, (newType) => {
+	if (newType !== 'ranked' && props.filters.difficulty) {
+		// Clear difficulty filter for non-ranked collections
+		emit('updateFilters', {
+			...props.filters,
+			difficulty: undefined
+		})
+	}
+})
 
 // Reactive state for showing/hiding filters
 const showFilters = ref(false)

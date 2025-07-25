@@ -30,6 +30,7 @@
 	<MatchFilters
 		v-if="matchCollection"
 		:filters="selectionStore.getCurrentFilters"
+		:collectionType="matchCollection.type"
 		@updateFilters="handleFiltersUpdate"
 	/>
 

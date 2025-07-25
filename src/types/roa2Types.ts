@@ -69,8 +69,6 @@ export interface Round {
 
 export interface Match {
 	id: number
-	playerElo: number
-	opponentElo: number
 	opponentName: string
 	rounds: Round[]
 	links: { text: string; link: string }[]
@@ -88,7 +86,12 @@ export interface MatchCollection {
 	name: string
 	type: MatchType
 	description: string
-	matches: Match[] | RankedMatch[]
+	matches: Match[]
+}
+
+export interface RankedMatchCollection extends Omit<MatchCollection, 'type' | 'matches'> {
+	type: 'ranked'
+	matches: RankedMatch[]
 }
 
 export type MatchResult = 'wins' | 'losses'
