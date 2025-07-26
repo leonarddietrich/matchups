@@ -12,7 +12,9 @@
   [headers.values]
     Content-Type = "application/javascript"
 
+# SPA fallback - this should handle all routes that don't match files
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
