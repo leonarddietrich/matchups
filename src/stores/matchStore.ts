@@ -1,30 +1,28 @@
 import { defineStore } from 'pinia'
-import type { MatchCollection, Match, RankedMatch } from '../types/roa2Types'
+import type { AnyMatchCollection, Match, RankedMatch } from '../types/roa2Types'
 import { STORAGE_KEYS } from '@/constants'
 
 export const useMatchStore = defineStore('matchStore', {
 	state: () => ({
-		matchCollectionIdList: [] as number[],
-		matchCollections: [] as MatchCollection[],
+		matchCollections: [] as AnyMatchCollection[],
 	}),
 	getters: {
 		/**
-		 * Returns the list of match collection IDs.
-		 * This is used to keep track of all match collections available in the store.
-		 * @returns list of numbers.
+		 * Returns the list of match collection names.
+		 * Computed from the actual match collections array.
+		 * @returns list of strings.
 		 */
-		getMatchCollectionIdList: (state) => {
-			return state.matchCollectionIdList
+		getMatchCollectionNameList: (state) => {
+			return state.matchCollections.map(c => c.name)
 		},
 		/**
-		 * Returns the list of match collections.
-		 * This is used to access all match collections available in the store.
-		 * @param id : number - The ID of the match collection to retrieve.
-		 * @returns list of MatchCollection objects.
+		 * Returns a match collection by name.
+		 * @param name : string - The name of the match collection to retrieve.
+		 * @returns MatchCollection or RankedMatchCollection object, or null if not found.
 		 */
-		getMatchCollectionById: (state) => {
-			return (id: number): MatchCollection | null => {
-				const matchCollection = state.matchCollections.find((collection) => collection.id === id)
+		getMatchCollectionByName: (state) => {
+			return (name: string): AnyMatchCollection | null => {
+				const matchCollection = state.matchCollections.find((collection) => collection.name === name)
 				return matchCollection || null
 			}
 		},
@@ -38,30 +36,26 @@ export const useMatchStore = defineStore('matchStore', {
 			const raw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_LIST)
 			if (raw) {
 				try {
-					const parsed = JSON.parse(raw) as number[]
-					this.$patch({
-						matchCollectionIdList: parsed,
-					})
-					for (const id of this.matchCollectionIdList) {
-						const collectionRaw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + id)
+					const collectionNames = JSON.parse(raw) as string[]
+
+					for (const name of collectionNames) {
+						const collectionRaw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + name)
 						if (collectionRaw) {
 							try {
-								const collection = JSON.parse(collectionRaw) as MatchCollection
+								const collection = JSON.parse(collectionRaw) as AnyMatchCollection
 								this.matchCollections.push(collection)
 							} catch (error) {
-								console.error(`Failed to parse match collection with id ${id}:`, error)
+								console.error(`Failed to parse match collection with name ${name}:`, error)
 							}
 						} else {
-							console.warn(`No match collection found for id ${id}`)
+							console.warn(`No match collection found for name ${name}`)
 						}
 					}
 				} catch (error) {
 					console.error('Failed to parse matches from storage:', error)
-					this.matchCollectionIdList = []
 					this.matchCollections = []
 				}
 			} else {
-				this.matchCollectionIdList = []
 				this.matchCollections = []
 			}
 		},
@@ -76,86 +70,88 @@ export const useMatchStore = defineStore('matchStore', {
 			}
 		},
 		/**
-		 * Saves the list of match collection IDs to local storage.
+		 * Saves the list of match collection names to local storage.
 		 * This is used to keep track of all match collections available in the store.
 		 */
 		saveMatchCollectionListToStorage() {
 			localStorage.setItem(
 				STORAGE_KEYS.MATCH_COLLECTION_LIST,
-				JSON.stringify(this.matchCollectionIdList),
+				JSON.stringify(this.getMatchCollectionNameList),
 			)
 		},
 		/**
 		 * Saves a specific match collection to local storage.
 		 * This is used to persist the state of a match collection.
-		 * @param collection : MatchCollection - The match collection to save.
+		 * @param collection : AnyMatchCollection - The match collection to save.
 		 */
-		saveMatchCollectionToStorage(collection: MatchCollection) {
-			if (!this.matchCollectionIdList.includes(collection.id)) {
-				console.warn(`Match collection with id ${collection.id} does not exist.`)
+		saveMatchCollectionToStorage(collection: AnyMatchCollection) {
+			if (!this.getMatchCollectionNameList.includes(collection.name)) {
+				console.warn(`Match collection with name ${collection.name} does not exist.`)
 				return
 			}
-			localStorage.setItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.id, JSON.stringify(collection))
+			localStorage.setItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.name, JSON.stringify(collection))
 		},
 		/**
 		 * Adds a new match collection to the store and saves it to local storage.
 		 * This is used to create a new match collection.
-		 * @param collection : MatchCollection - The match collection to add.
+		 * @param collection : AnyMatchCollection - The match collection to add.
 		 */
-		addMatchCollection(collection: MatchCollection) {
-			if (this.matchCollectionIdList.includes(collection.id)) {
-				console.warn(`Match collection with id ${collection.id} already exists.`)
+		addMatchCollection(collection: AnyMatchCollection) {
+			// Check if collection already exists in the actual collections array (more reliable)
+			const existingCollection = this.matchCollections.find(c => c.name === collection.name)
+			if (existingCollection) {
+				console.warn(`Match collection with name ${collection.name} already exists.`)
 				return
 			}
-			this.matchCollectionIdList.push(collection.id)
+
 			this.matchCollections.push(collection)
 			this.saveToStorage()
 		},
 		/**
 		 * Updates an existing match collection in the store and saves it to local storage.
 		 * This is used to modify an existing match collection (e.g., adding a new match).
-		 * @param collection : MatchCollection - The updated match collection.
+		 * @param collection : AnyMatchCollection - The updated match collection.
 		 */
-		updateMatchCollection(collection: MatchCollection) {
-			const index = this.matchCollections.findIndex(c => c.id === collection.id)
+		updateMatchCollection(collection: AnyMatchCollection) {
+			const index = this.matchCollections.findIndex(c => c.name === collection.name)
 			if (index === -1) {
-				console.warn(`Match collection with id ${collection.id} does not exist.`)
+				console.warn(`Match collection with name ${collection.name} does not exist.`)
 				return
 			}
 			this.matchCollections[index] = collection
 			this.saveToStorage()
 		},
 		/**
-		 * Retrieves a match collection by its ID.
-		 * @param id : number - The ID of the match collection to retrieve.
-		 * @returns MatchCollection | undefined - The match collection if found, otherwise undefined.
+		 * Deletes a match collection by its name.
+		 * @param name : string - The name of the match collection to delete.
 		 */
-		deleteMatchCollection(id: number) {
-			const index = this.matchCollectionIdList.indexOf(id)
-			if (index === -1) {
-				console.warn(`Match collection with id ${id} does not exist.`)
+		deleteMatchCollection(name: string) {
+			// Check if collection exists in the actual collections array (more reliable)
+			const collection = this.matchCollections.find(c => c.name === name)
+			if (!collection) {
+				console.warn(`Match collection with name ${name} does not exist.`)
 				return
 			}
-			this.matchCollectionIdList.splice(index, 1)
-			this.matchCollections = this.matchCollections.filter((collection) => collection.id !== id)
-			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + id)
+
+			this.matchCollections = this.matchCollections.filter((collection) => collection.name !== name)
+			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + name)
 			this.saveMatchCollectionListToStorage()
 		},
 		/**
 		 * Deletes a match from a specific match collection.
 		 *
 		 * @param matchId : number - The ID of the match to delete.
-		 * @param collectionId : number - The ID of the match collection from which to delete the match.
+		 * @param collectionName : string - The name of the match collection from which to delete the match.
 		 */
-		deleteMatch(matchId: number, collectionId: number) {
-			const collection = this.getMatchCollectionById(collectionId)
+		deleteMatch(matchId: number, collectionName: string) {
+			const collection = this.getMatchCollectionByName(collectionName)
 			if (!collection) {
-				console.warn(`Match collection with id ${collectionId} does not exist.`)
+				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
 			const matchIndex = collection.matches.findIndex((match) => match.id === matchId)
 			if (matchIndex === -1) {
-				console.warn(`Match with id ${matchId} does not exist in collection ${collectionId}.`)
+				console.warn(`Match with id ${matchId} does not exist in collection ${collectionName}.`)
 				return
 			}
 			collection.matches.splice(matchIndex, 1)
@@ -164,47 +160,46 @@ export const useMatchStore = defineStore('matchStore', {
 		/**
 		 * Updates an existing match in a specific match collection.
 		 *
-		 * @param collectionId : number - The ID of the match collection containing the match to update.
+		 * @param collectionName : string - The name of the match collection containing the match to update.
 		 * @param match : Match | RankedMatch - The updated match object.
 		 */
-		updateMatch(collectionId: number, match: Match | RankedMatch) {
-			const collection = this.getMatchCollectionById(collectionId)
+		updateMatch(collectionName: string, match: Match | RankedMatch) {
+			const collection = this.getMatchCollectionByName(collectionName)
 			if (!collection) {
-				console.warn(`Match collection with id ${collectionId} does not exist.`)
+				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
-			const matchIndex = collection.matches.findIndex((m) => m.id === match.id)
+			const matchIndex = collection.matches.findIndex((m: Match | RankedMatch) => m.id === match.id)
 			if (matchIndex === -1) {
-				console.warn(`Match with id ${match.id} does not exist in collection ${collectionId}.`)
+				console.warn(`Match with id ${match.id} does not exist in collection ${collectionName}.`)
 				return
 			}
-			collection.matches[matchIndex] = match
+			;(collection.matches as (Match | RankedMatch)[])[matchIndex] = match
 			this.saveMatchCollectionToStorage(collection)
 		},
 		/**
 		 * Adds a match to a specific match collection.
 		 *
-		 * @param collectionId : number - The ID of the match collection to which the match will be added.
+		 * @param collectionName : string - The name of the match collection to which the match will be added.
 		 * @param match : Match | RankedMatch - The match object to add.
 		 */
-		addMatchToCollection(collectionId: number, match: Match | RankedMatch) {
-			const collection = this.getMatchCollectionById(collectionId)
+		addMatchToCollection(collectionName: string, match: Match | RankedMatch) {
+			const collection = this.getMatchCollectionByName(collectionName)
 			if (!collection) {
-				console.warn(`Match collection with id ${collectionId} does not exist.`)
+				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
-			if (collection.matches.some((m) => m.id === match.id)) {
-				console.warn(`Match with id ${match.id} already exists in collection ${collectionId}.`)
+			if (collection.matches.some((m: Match | RankedMatch) => m.id === match.id)) {
+				console.warn(`Match with id ${match.id} already exists in collection ${collectionName}.`)
 				return
 			}
-			collection.matches.push(match)
+			;(collection.matches as (Match | RankedMatch)[]).push(match)
 			this.saveMatchCollectionToStorage(collection)
 		},
 		resetStore() {
-			this.matchCollectionIdList = []
 			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_LIST)
-			this.matchCollections.forEach((collection: MatchCollection) =>
-				localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.id),
+			this.matchCollections.forEach((collection: AnyMatchCollection) =>
+				localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.name),
 			)
 			this.matchCollections = []
 		},

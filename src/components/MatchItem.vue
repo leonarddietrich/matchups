@@ -3,13 +3,13 @@
 		<div>
 			<div class="match-header clickable" @click="openModifyModal">
 				<div>
-					<div>You</div>
-					<div v-if="isRankedCollection">{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
+					<div>{{ props.match.id }}</div>
+					<div v-if="isRankedCollection && 'playerElo' in props.match">{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
 					<div v-else>{{ props.match.opponentName }}</div>
 				</div>
 				<div>
 					<div>{{ props.match.opponentName }}</div>
-					<div v-if="isRankedCollection">{{ props.match.opponentElo === -1 ? 'Unranked' : props.match.opponentElo }}</div>
+					<div v-if="isRankedCollection && 'opponentElo' in props.match">{{ props.match.opponentElo === -1 ? 'Unranked' : props.match.opponentElo }}</div>
 				</div>
 			</div>
 		</div>
@@ -67,10 +67,10 @@ const props = defineProps<{
 
 // Check if current collection is ranked to show ELO
 const isRankedCollection = computed(() => {
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) return false
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	return currentCollection?.type === 'ranked'
 })
 

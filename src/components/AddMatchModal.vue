@@ -5,7 +5,16 @@
 		</template>
 		<template v-slot:body>
 			<div class="add-match-content">
-				<div class="match-details-section">
+				<div class="	co	co	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)h-details-section">
 					<h4>Match Details</h4>
 					<div v-if="isRankedCollection" class="form-group">
 						<label for="player-elo">Player Elo</label>
@@ -215,19 +224,19 @@ const availableRivals: RivalName[] = RIVAL_NAMES
 
 // Check if current collection is ranked
 const isRankedCollection = computed(() => {
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) return false
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	return currentCollection?.type === 'ranked'
 })
 
 // Get maximum rounds allowed for current collection type
 const maxRoundsAllowed = computed(() => {
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) return 3
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return 3
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) return 3
 
 	switch (currentCollection.type) {
@@ -281,10 +290,13 @@ const isFormValid = computed(() => {
 })
 
 function generateNextMatchId(): number {
-	const currentCollection = matchStore.getMatchCollectionById(selectionStore.getselectedMatchCollectionId!)
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return 1
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) return 1
 
-	const existingIds = currentCollection.matches.map(match => match.id)
+	const existingIds = currentCollection.matches.map((match: Match | RankedMatch) => match.id)
 	if (existingIds.length === 0) return 1
 
 	// Find the next available ID
@@ -303,13 +315,13 @@ function saveMatch() {
 		return
 	}
 
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) {
 		alert('No match collection selected.')
 		return
 	}
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) {
 		alert('Selected match collection not found.')
 		return

@@ -330,19 +330,19 @@ const availableRivals: RivalName[] = RIVAL_NAMES
 
 // Check if current collection is ranked
 const isRankedCollection = computed(() => {
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) return false
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	return currentCollection?.type === 'ranked'
 })
 
 // Get maximum rounds allowed for current collection type
 const maxRoundsAllowed = computed(() => {
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) return 3
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return 3
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) return 3
 
 	switch (currentCollection.type) {
@@ -416,13 +416,13 @@ function saveMatch() {
 		return
 	}
 
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) {
 		alert('No match collection selected.')
 		return
 	}
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) {
 		alert('Selected match collection not found.')
 		return
@@ -442,7 +442,7 @@ function saveMatch() {
 		} as Match
 
 	// Update the match in the collection
-	const updatedMatches = currentCollection.matches.map(match =>
+	const updatedMatches = currentCollection.matches.map((match: Match | RankedMatch) =>
 		match.id === finalMatch.id ? finalMatch : match
 	)
 
@@ -475,20 +475,20 @@ function deleteMatch() {
 		return
 	}
 
-	const collectionId = selectionStore.getselectedMatchCollectionId
-	if (!collectionId) {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) {
 		alert('No match collection selected.')
 		return
 	}
 
-	const currentCollection = matchStore.getMatchCollectionById(collectionId)
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) {
 		alert('Selected match collection not found.')
 		return
 	}
 
 	// Remove the match from the collection
-	const updatedMatches = currentCollection.matches.filter(match => match.id !== props.match!.id)
+	const updatedMatches = currentCollection.matches.filter((match: Match | RankedMatch) => match.id !== props.match!.id)
 
 	const updatedCollection = {
 		...currentCollection,

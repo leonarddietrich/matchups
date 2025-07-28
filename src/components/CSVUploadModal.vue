@@ -138,12 +138,12 @@ const nameError = ref<string>('')
 
 // Compute next available ID
 const nextAvailableId = computed(() => {
-	const existingIds = matchStore.getMatchCollectionIdList
-	if (existingIds.length === 0) return 0
+	const existingNames = matchStore.getMatchCollectionNameList
+	if (existingNames.length === 0) return 0
 
 	// Find the smallest available ID starting from 0
 	let id = 0
-	while (existingIds.includes(id)) {
+	while (existingNames.includes(`Collection_${id}`)) {
 		id++
 	}
 	return id
@@ -362,8 +362,8 @@ function buildAndSaveCollection() {
 	console.log('Match collection saved.')
 
 	// Automatically select the new match collection
-	selectionStore.setMatchCollectionId(matchCollection.id)
-	console.log('New match collection automatically selected:', matchCollection.id)
+	selectionStore.setMatchCollectionName(matchCollection.name)
+	console.log('New match collection automatically selected:', matchCollection.name)
 
 	// Reset form after successful save
 	resetForm()

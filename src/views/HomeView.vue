@@ -31,7 +31,7 @@
 		</div>
 
 		<!-- Development Tools -->
-		<div class="dev-tools">
+		<div v-if="matchStore.getMatchCollectionNameList.length == 0" class="dev-tools">
 			<button
 				style="color: yellow"
 				@click="useExampleMatches"
@@ -67,17 +67,10 @@ import MatchCollectionOverview from '@/components/MatchCollectionOverview.vue'
 import AddCollectionModal from '@/components/AddCollectionModal.vue'
 import CSVUploadModal from '@/components/CSVUploadModal.vue'
 import JsonUploadModal from '@/components/JsonUploadModal.vue'
-import { generateExampleCollectionData, EXAMPLE_COLLECTION_NAME } from '@/scripts/example'
+import { EXAMPLE_MATCH_COLLECTION, EXAMPLE_COLLECTION_NAME } from '@/constants/example'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
-
-// Helper functions for ID generation
-function getNextAvailableCollectionId(): number {
-	const existingIds = matchStore.matchCollections.map(c => c.id)
-	if (existingIds.length === 0) return 1
-	return Math.max(...existingIds) + 1
-}
 
 const showAddCollectionModal = ref(false)
 const showUploadModal = ref(false)
@@ -89,14 +82,12 @@ const exampleCollectionExists = computed(() => {
 })
 
 function useExampleMatches() {
-	const collectionId = getNextAvailableCollectionId()
-	const exampleCollection = generateExampleCollectionData(collectionId)
-	matchStore.addMatchCollection(exampleCollection)
+	matchStore.addMatchCollection(EXAMPLE_MATCH_COLLECTION)
 }
 
 function resetStore() {
 	matchStore.resetStore()
-	selectionStore.resetMatchCollectionId()
+	selectionStore.resetMatchCollectionName()
 	selectionStore.resetCharacterSelection()
 	alert('Matches and selections have been reset.')
 }

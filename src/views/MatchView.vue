@@ -43,6 +43,21 @@
 			@openModifyModal="openModifyModal"
 		/>
 	</div>
+
+	<!-- Add match ID display for each match -->
+	<div v-if="matchCollection" class="match-ids">
+		<h3>Match IDs Debug Info:</h3>
+		<div v-for="match in matchCollection.matches" :key="match.id" class="match-id-item">
+			<strong>Match ID:</strong> {{ match.id }} | <strong>Opponent:</strong> {{ match.opponentName }} |
+			<strong>Rounds:</strong> {{ match.rounds.length }}
+		</div>
+		<div class="debug-info">
+			<p><strong>Total Matches:</strong> {{ matchCollection.matches.length }}</p>
+			<p><strong>Collection Type:</strong> {{ matchCollection.type }}</p>
+			<p><strong>Collection Name:</strong> {{ matchCollection.name }}</p>
+		</div>
+	</div>
+
 	<AddMatchModal :display="showAddMatchModal" @closeAddMatchModal="showAddMatchModal = false">
 	</AddMatchModal>
 	<ModifyMatchModal
@@ -69,7 +84,7 @@ import MatchFilters from '@/components/MatchFilters.vue'
 import { ref, computed } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import type { MatchCollection, MatchFilters as MatchFiltersType, Match } from '@/types/roa2Types'
+import type { AnyMatchCollection, MatchFilters as MatchFiltersType, Match } from '@/types/roa2Types'
 import { filterMatches } from '@/scripts/matchFilters'
 
 const showAddMatchModal = ref(false)
@@ -79,13 +94,13 @@ const selectedMatch = ref<Match | null>(null)
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
 
-const matchCollection = computed<MatchCollection | null>(() => {
-	const id = selectionStore.getselectedMatchCollectionId
-	if (id === null) {
+const matchCollection = computed<AnyMatchCollection | null>(() => {
+	const name = selectionStore.getSelectedMatchCollectionName
+	if (!name) {
 		console.warn('No match collection selected')
 		return null
 	}
-	return matchStore.getMatchCollectionById(id)
+	return matchStore.getMatchCollectionByName(name)
 })
 
 const filteredMatches = computed(() => {

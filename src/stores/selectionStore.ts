@@ -4,26 +4,26 @@ import { STORAGE_KEYS } from '@/constants'
 
 export const useSelectionStore = defineStore('selectionStore', {
 	state: () => ({
-		matchCollectionId: null as number | null,
+		matchCollectionName: null as string | null,
 		playerCharacter: null as RivalName | null,
 		opponentCharacter: null as RivalName | null,
 		currentFilters: {} as MatchFilters,
 	}),
 	actions: {
 		/**
-		 * Loads the active match collection ID from localStorage.
+		 * Loads the active match collection name from localStorage.
 		 * This should be called when the application starts to restore the previous selection.
 		 */
 		loadFromStorage() {
-			// Load match collection ID
+			// Load match collection name
 			const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID)
 			if (raw) {
 				try {
-					const id = JSON.parse(raw) as number
-					this.matchCollectionId = id
-					console.info('Loaded match collection ID from storage:', id)
+					const name = JSON.parse(raw) as string
+					this.matchCollectionName = name
+					console.info('Loaded match collection name from storage:', name)
 				} catch (error) {
-					console.error('Failed to parse match collection ID from storage:', error)
+					console.error('Failed to parse match collection name from storage:', error)
 				}
 			}
 
@@ -52,17 +52,17 @@ export const useSelectionStore = defineStore('selectionStore', {
 			this.playerCharacter = null
 			this.opponentCharacter = null
 		},
-		setMatchCollectionId(id: number) {
-			console.info('Setting match collection ID:', id)
-			this.matchCollectionId = id
+		setMatchCollectionName(name: string) {
+			console.info('Setting match collection name:', name)
+			this.matchCollectionName = name
 			// Save to localStorage
-			localStorage.setItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID, JSON.stringify(id))
+			localStorage.setItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID, JSON.stringify(name))
 			// Reset filters when changing match collection
 			this.resetFilters()
 		},
-		resetMatchCollectionId() {
-			console.info('Resetting match collection ID')
-			this.matchCollectionId = null
+		resetMatchCollectionName() {
+			console.info('Resetting match collection name')
+			this.matchCollectionName = null
 			// Remove from localStorage
 			localStorage.removeItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID)
 		},
@@ -80,8 +80,8 @@ export const useSelectionStore = defineStore('selectionStore', {
 		},
 	},
 	getters: {
-		getselectedMatchCollectionId: (state) => {
-			return state.matchCollectionId
+		getSelectedMatchCollectionName: (state) => {
+			return state.matchCollectionName
 		},
 		getPlayerCharacter: (state) => {
 			return state.playerCharacter

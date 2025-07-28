@@ -44,8 +44,7 @@
 				</div>
 
 				<div class="form-info">
-					<p><strong>Collection ID:</strong> {{ nextAvailableId }}</p>
-					<p class="info-text">ID will be automatically assigned</p>
+					<p class="info-text">Collection will be identified by name</p>
 				</div>
 			</div>
 		</template>
@@ -85,11 +84,6 @@ const collectionDescription = ref('')
 const collectionType = ref<MatchType>('ranked')
 const nameError = ref('')
 
-const nextAvailableId = computed(() => {
-	const existingIds = matchStore.getMatchCollectionIdList
-	return existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1
-})
-
 // Watch for name changes to validate uniqueness
 watch(collectionName, (newName) => {
 	if (newName.trim() === '') {
@@ -122,7 +116,6 @@ function createCollection() {
 	const date = new Date().toISOString()
 
 	const newCollection: MatchCollection = {
-		id: nextAvailableId.value,
 		createdAt: date,
 		updatedAt: date,
 		name: collectionName.value.trim(),
@@ -136,8 +129,8 @@ function createCollection() {
 	console.log('Match collection created:', newCollection)
 
 	// Automatically select the new match collection
-	selectionStore.setMatchCollectionId(newCollection.id)
-	console.log('New match collection automatically selected:', newCollection.id)
+	selectionStore.setMatchCollectionName(newCollection.name)
+	console.log('New match collection automatically selected:', newCollection.name)
 
 	// Reset form and close modal
 	resetForm()

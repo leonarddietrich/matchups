@@ -29,9 +29,6 @@
 				<div v-if="conflictInfo" class="conflict-section">
 					<h4>⚠️ Conflict Detected</h4>
 					<div class="conflict-details">
-						<p v-if="conflictInfo.idExists">
-							<strong>ID Conflict:</strong> A collection with ID {{ jsonData?.id }} already exists.
-						</p>
 						<p v-if="conflictInfo.nameExists">
 							<strong>Name Conflict:</strong> A collection named "{{ jsonData?.name }}" already exists.
 						</p>
@@ -63,8 +60,8 @@
 								</div>
 							</label>
 							<label class="radio-option">
-								<input type="radio" v-model="resolutionStrategy" value="newId" />
-								<strong>Import as New</strong> - Assign new ID and import as separate collection
+								<input type="radio" v-model="resolutionStrategy" value="newName" />
+								<strong>Import as New</strong> - Create new collection with modified name (match IDs preserved)
 							</label>
 							<label class="radio-option">
 								<input type="radio" v-model="resolutionStrategy" value="cancel" />
@@ -101,7 +98,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import BaseModal from './BaseModal.vue'
-import type { MatchCollection } from '@/types/roa2Types'
+import type { AnyMatchCollection } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 
@@ -114,18 +111,18 @@ const props = defineProps<{
 	display: boolean
 }>()
 
-const jsonData = ref<MatchCollection | null>(null)
+const jsonData = ref<AnyMatchCollection | null>(null)
 const validationErrors = ref<string[]>([])
-const resolutionStrategy = ref<'replace' | 'merge' | 'newId' | 'cancel'>('cancel')
+const resolutionStrategy = ref<'replace' | 'merge' | 'newName' | 'cancel'>('cancel')
 
 // Helper function to compare matches for equality (excluding timestamps)
-function areMatchesEqual(match1: MatchCollection['matches'][0], match2: MatchCollection['matches'][0]): boolean {
+function areMatchesEqual(match1: AnyMatchCollection['matches'][0], match2: AnyMatchCollection['matches'][0]): boolean {
 	// Compare all relevant properties except any that might differ but are acceptable
 	const props1 = {
 		id: match1.id,
 		opponentName: match1.opponentName,
-		opponentElo: match1.opponentElo,
-		playerElo: match1.playerElo,
+		opponentElo: 'opponentElo' in match1 ? match1.opponentElo : undefined,
+		playerElo: 'playerElo' in match1 ? match1.playerElo : undefined,
 		rounds: match1.rounds,
 		links: match1.links
 	}
@@ -133,8 +130,8 @@ function areMatchesEqual(match1: MatchCollection['matches'][0], match2: MatchCol
 	const props2 = {
 		id: match2.id,
 		opponentName: match2.opponentName,
-		opponentElo: match2.opponentElo,
-		playerElo: match2.playerElo,
+		opponentElo: 'opponentElo' in match2 ? match2.opponentElo : undefined,
+		playerElo: 'playerElo' in match2 ? match2.playerElo : undefined,
 		rounds: match2.rounds,
 		links: match2.links
 	}
@@ -147,7 +144,6 @@ const conflictInfo = computed(() => {
 	if (!jsonData.value) return null
 
 	const existingCollections = matchStore.matchCollections
-	const idExists = existingCollections.some(c => c.id === jsonData.value!.id)
 	const nameExists = existingCollections.some(c =>
 		c.name.toLowerCase().trim() === jsonData.value!.name.toLowerCase().trim()
 	)
@@ -155,9 +151,9 @@ const conflictInfo = computed(() => {
 	const matchIdConflicts: number[] = []
 
 	// Check for match ID conflicts if we want to merge
-	if (idExists || nameExists) {
+	if (nameExists) {
 		const targetCollection = existingCollections.find(c =>
-			c.id === jsonData.value!.id || c.name.toLowerCase().trim() === jsonData.value!.name.toLowerCase().trim()
+			c.name.toLowerCase().trim() === jsonData.value!.name.toLowerCase().trim()
 		)
 
 		if (targetCollection) {
@@ -179,9 +175,8 @@ const conflictInfo = computed(() => {
 		}
 	}
 
-	if (idExists || nameExists || matchIdConflicts.length > 0) {
+	if (nameExists || matchIdConflicts.length > 0) {
 		return {
-			idExists,
 			nameExists,
 			matchIdConflicts,
 			canMerge: matchIdConflicts.length === 0
@@ -245,9 +240,6 @@ function validateJsonData(data: unknown) {
 	const obj = data as Record<string, unknown>
 
 	// Check required fields
-	if (!obj.id && obj.id !== 0) {
-		validationErrors.value.push('Missing required field: id')
-	}
 	if (!obj.name || typeof obj.name !== 'string') {
 		validationErrors.value.push('Missing required field: name')
 	}
@@ -303,7 +295,7 @@ function validateJsonData(data: unknown) {
 	}
 
 	if (validationErrors.value.length === 0) {
-		jsonData.value = obj as unknown as MatchCollection
+		jsonData.value = obj as unknown as AnyMatchCollection
 		// Set initial resolution strategy based on conflicts
 		const conflict = conflictInfo.value
 		if (conflict) {
@@ -315,29 +307,11 @@ function validateJsonData(data: unknown) {
 				resolutionStrategy.value = 'cancel'
 			}
 		} else {
-			resolutionStrategy.value = 'newId'
+			resolutionStrategy.value = 'newName'
 		}
 	} else {
 		jsonData.value = null
 	}
-}
-
-function getNextAvailableId(): number {
-	const existingIds = matchStore.matchCollections.map(c => c.id)
-	if (existingIds.length === 0) return 1
-	return Math.max(...existingIds) + 1
-}
-
-function getNextAvailableMatchId(): number {
-	let maxId = 0
-	for (const collection of matchStore.matchCollections) {
-		for (const match of collection.matches) {
-			if (match.id > maxId) {
-				maxId = match.id
-			}
-		}
-	}
-	return maxId + 1
 }
 
 function importCollection() {
@@ -347,13 +321,9 @@ function importCollection() {
 
 	switch (resolutionStrategy.value) {
 		case 'replace':
-			// Find and replace existing collection
-			const existingIndex = matchStore.matchCollections.findIndex(c =>
-				c.id === collection.id || c.name.toLowerCase().trim() === collection.name.toLowerCase().trim()
-			)
-			if (existingIndex >= 0) {
-				const existingCollection = matchStore.matchCollections[existingIndex]
-				collection.id = existingCollection.id // Keep existing ID
+			// Find and replace existing collection by name
+			const existingCollection = matchStore.getMatchCollectionByName(collection.name)
+			if (existingCollection) {
 				collection.updatedAt = new Date().toISOString()
 				matchStore.updateMatchCollection(collection)
 			} else {
@@ -364,13 +334,11 @@ function importCollection() {
 
 		case 'merge':
 			// Merge matches into existing collection (preserving original match IDs)
-			const targetCollection = matchStore.matchCollections.find(c =>
-				c.id === collection.id || c.name.toLowerCase().trim() === collection.name.toLowerCase().trim()
-			)
+			const targetCollection = matchStore.getMatchCollectionByName(collection.name)
 			if (targetCollection) {
 				// Create a map of existing matches by ID for intelligent merging
 				const existingMatchesById = new Map(targetCollection.matches.map(m => [m.id, m]))
-				const matchesToAdd: MatchCollection['matches'] = []
+				const matchesToAdd = []
 
 				// Check each new match
 				for (const newMatch of collection.matches) {
@@ -396,22 +364,22 @@ function importCollection() {
 					updatedAt: new Date().toISOString()
 				}
 				matchStore.updateMatchCollection(updatedCollection)
-				collection.id = targetCollection.id // For selection
 			}
 			break
 
-		case 'newId':
-			// Assign new ID and import as new collection
-			collection.id = getNextAvailableId()
+		case 'newName':
+			// Import as new collection with modified name to avoid conflicts
+			// NEVER change match IDs - they are sacred identifiers!
+			let newName = collection.name
+			let counter = 1
+			while (matchStore.getMatchCollectionByName(newName)) {
+				newName = `${collection.name} (${counter})`
+				counter++
+			}
+			collection.name = newName
 			collection.updatedAt = new Date().toISOString()
 
-			// Also reassign match IDs to avoid conflicts
-			let nextMatchId = getNextAvailableMatchId()
-			collection.matches = collection.matches.map(match => ({
-				...match,
-				id: nextMatchId++
-			}))
-
+			// Keep original match IDs - they must never be changed!
 			matchStore.addMatchCollection(collection)
 			break
 
@@ -421,7 +389,7 @@ function importCollection() {
 	}
 
 	// Select the imported/updated collection
-	selectionStore.setMatchCollectionId(collection.id)
+	selectionStore.setMatchCollectionName(collection.name)
 
 	// Reset and close
 	resetForm()

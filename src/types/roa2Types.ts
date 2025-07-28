@@ -69,6 +69,8 @@ export interface Round {
 
 export interface Match {
 	id: number
+	// createdAt: string // ISO date string for when the match was created
+	// updatedAt: string // ISO date string for when the match was last updated
 	opponentName: string
 	rounds: Round[]
 	links: { text: string; link: string }[]
@@ -80,7 +82,6 @@ export interface RankedMatch extends Match {
 }
 
 export interface MatchCollection {
-	id: number // Unique identifier for the match collection
 	createdAt: string // ISO date string for when the collection was created
 	updatedAt: string // ISO date string for when the collection was last updated
 	name: string
@@ -93,6 +94,8 @@ export interface RankedMatchCollection extends Omit<MatchCollection, 'type' | 'm
 	type: 'ranked'
 	matches: RankedMatch[]
 }
+
+export type AnyMatchCollection = MatchCollection | RankedMatchCollection
 
 export type MatchResult = 'wins' | 'losses'
 export type DifficultyLevel = 'easy' | 'equal' | 'hard' | 'unknown'

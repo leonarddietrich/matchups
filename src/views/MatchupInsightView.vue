@@ -63,12 +63,12 @@ const selectableRivals = computed(() => {
 		opponent: {} as Record<RivalName, Set<RivalName>>
 	}
 
-	const selectedId = selectionStore.getselectedMatchCollectionId
-	if (selectedId === null) {
+	const selectedName = selectionStore.getSelectedMatchCollectionName
+	if (selectedName === null) {
 		return selectableRivals
 	}
 
-	const selectedMatchCollection = matchStore.getMatchCollectionById(selectedId)
+	const selectedMatchCollection = matchStore.getMatchCollectionByName(selectedName)
 	if (!selectedMatchCollection) {
 		return selectableRivals
 	}

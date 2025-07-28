@@ -7,10 +7,6 @@
 			<table class="collections-table">
 				<thead>
 					<tr>
-						<th @click="setSortColumn('id')" class="sortable-header" :class="getSortClass('id')">
-							ID
-							<span class="sort-icon">{{ getSortIcon('id') }}</span>
-						</th>
 						<th @click="setSortColumn('name')" class="sortable-header" :class="getSortClass('name')">
 							Name
 							<span class="sort-icon">{{ getSortIcon('name') }}</span>
@@ -35,8 +31,7 @@
 					<tr v-if="matchCollections.length === 0">
 						<td colspan="7" class="no-data">No match collections available</td>
 					</tr>
-					<tr v-for="collection in matchCollections" :key="collection.id" class="collection-row">
-						<td>{{ collection.id }}</td>
+					<tr v-for="collection in matchCollections" :key="collection.name" class="collection-row">
 						<td class="name-cell" :title="collection.name">{{ collection.name }}</td>
 						<td class="type-cell">
 							<span class="type-badge" :class="collection.type">{{ collection.type }}</span>
@@ -45,13 +40,13 @@
 						<td class="date-cell">{{ formatDate(collection.createdAt) }}</td>
 						<td class="date-cell">{{ formatDate(collection.updatedAt) }}</td>
 						<td class="actions-cell">
-							<button @click="selectCollection(collection.id)" class="action-btn select-btn">
+							<button @click="selectCollection(collection.name)" class="action-btn select-btn">
 								Select
 							</button>
 							<button @click="downloadCollection(collection)" class="action-btn download-btn">
 								Save JSON
 							</button>
-							<button @click="deleteCollection(collection.id)" class="action-btn delete-btn">
+							<button @click="deleteCollection(collection.name)" class="action-btn delete-btn">
 								Delete
 							</button>
 						</td>
@@ -74,10 +69,10 @@ const selectionStore = useSelectionStore()
 const router = useRouter()
 
 // Sorting state
-type SortColumn = 'id' | 'name' | 'type' | 'createdAt' | 'updatedAt'
+type SortColumn = 'name' | 'type' | 'createdAt' | 'updatedAt'
 type SortDirection = 'asc' | 'desc'
 
-const sortColumn = ref<SortColumn>('id')
+const sortColumn = ref<SortColumn>('name')
 const sortDirection = ref<SortDirection>('asc')
 
 // Sorted match collections
@@ -89,10 +84,6 @@ const matchCollections = computed(() => {
 		let valueB: string | number
 
 		switch (sortColumn.value) {
-			case 'id':
-				valueA = a.id
-				valueB = b.id
-				break
 			case 'name':
 				valueA = a.name.toLowerCase()
 				valueB = b.name.toLowerCase()
@@ -154,17 +145,21 @@ function formatDate(dateString: string): string {
 	})
 }
 
-function selectCollection(id: number) {
-	selectionStore.setMatchCollectionId(id)
+function selectCollection(name: string) {
+	selectionStore.setMatchCollectionName(name)
 	router.push('/matches')
 }
 
-function deleteCollection(id: number) {
+function deleteCollection(name: string) {
 	if (confirm('Are you sure you want to delete this match collection? This action cannot be undone.')) {
-		matchStore.deleteMatchCollection(id)
+		console.log(`Attempting to delete collection: "${name}"`)
+		console.log('Available collections:', matchStore.matchCollections.map(c => c.name))
+
+		matchStore.deleteMatchCollection(name)
+
 		// If the deleted collection was selected, reset selection
-		if (selectionStore.getselectedMatchCollectionId === id) {
-			selectionStore.resetMatchCollectionId()
+		if (selectionStore.getSelectedMatchCollectionName === name) {
+			selectionStore.resetMatchCollectionName()
 		}
 	}
 }

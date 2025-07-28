@@ -16,7 +16,7 @@
 import { computed } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import type { Round, Stage } from '@/types/roa2Types'
+import type { Round, Stage, Match, RankedMatch } from '@/types/roa2Types'
 import { STAGES } from '@/constants'
 
 interface StageInsight extends Stage {
@@ -30,19 +30,19 @@ const selectionStore = useSelectionStore()
 
 const player = computed(() => selectionStore.getPlayerCharacter)
 const opponent = computed(() => selectionStore.getOpponentCharacter)
-const selectedMatchCollectionId = computed(() => selectionStore.getselectedMatchCollectionId)
+const selectedMatchCollectionName = computed(() => selectionStore.getSelectedMatchCollectionName)
 
 const rounds = computed<Round[]>(() => {
-	if (!player.value || !opponent.value || !selectedMatchCollectionId.value) {
+	if (!player.value || !opponent.value || !selectedMatchCollectionName.value) {
 		return []
 	}
-	const selectedMatchCollection = matchStore.getMatchCollectionById(selectedMatchCollectionId.value)
+	const selectedMatchCollection = matchStore.getMatchCollectionByName(selectedMatchCollectionName.value)
 
 	if (!selectedMatchCollection) return []
 
 	return selectedMatchCollection.matches
-		.reduce((acc, match) => acc.concat(match.rounds), [] as Round[])
-		.filter((round) => round.playerRival === player.value && round.opponentRival === opponent.value)
+		.reduce((acc: Round[], match: Match | RankedMatch) => acc.concat(match.rounds), [] as Round[])
+		.filter((round: Round) => round.playerRival === player.value && round.opponentRival === opponent.value)
 })
 
 const stageInsights = computed<StageInsight[]>(() => {

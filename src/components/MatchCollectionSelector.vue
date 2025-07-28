@@ -1,7 +1,7 @@
 <template>
-	<select v-model="selectedId" @change="(Event) => updateSelection(Event)">
+	<select v-model="selectedName" @change="(Event) => updateSelection(Event)">
 		<option v-if="!matchCollections.length" disabled value="">no match collection</option>
-		<option v-for="collection in matchCollections" :key="collection.id" :value="collection.id">
+		<option v-for="collection in matchCollections" :key="collection.name" :value="collection.name">
 			{{ collection.name }}
 		</option>
 	</select>
@@ -16,14 +16,14 @@ const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
 
 const matchCollections = computed(() => matchStore.matchCollections)
-const selectedId = computed({
-	get: () => selectionStore.getselectedMatchCollectionId,
-	set: (val: number) => selectionStore.setMatchCollectionId(val),
+const selectedName = computed({
+	get: () => selectionStore.getSelectedMatchCollectionName,
+	set: (val: string) => selectionStore.setMatchCollectionName(val),
 })
 
 function updateSelection(event: Event) {
-	const newId = (event.target as HTMLSelectElement).value
-	selectedId.value = Number(newId)
+	const newName = (event.target as HTMLSelectElement).value
+	selectedName.value = newName
 }
 </script>
 
