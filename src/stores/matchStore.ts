@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import type { AnyMatchCollection, Match, RankedMatch } from '../types/roa2Types'
-import { STORAGE_KEYS } from '@/constants'
+import { LOCAL_STORAGE_KEYS } from '@/constants'
+import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match'
+import { transformMatchCollectionWithOutdatedVersion } from '@/scripts/roa2'
 
 export const useMatchStore = defineStore('matchStore', {
 	state: () => ({
@@ -33,51 +35,40 @@ export const useMatchStore = defineStore('matchStore', {
 		 * This should be called when the application starts to restore previous state.
 		 */
 		loadFromStorage() {
-			const raw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_LIST)
-			if (raw) {
-				try {
-					const collectionNames = JSON.parse(raw) as string[]
+			console.info('Loading match collections from local storage...')
+			deleteOldData()
 
-					for (const name of collectionNames) {
-						const collectionRaw = localStorage.getItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + name)
-						if (collectionRaw) {
-							try {
-								const collection = JSON.parse(collectionRaw) as AnyMatchCollection
-								this.matchCollections.push(collection)
-							} catch (error) {
-								console.error(`Failed to parse match collection with name ${name}:`, error)
-							}
-						} else {
-							console.warn(`No match collection found for name ${name}`)
+			this.matchCollections = []
+			const localStorageKeys = Object.keys(localStorage).filter(key => key.startsWith(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX))
+
+			for (const key of localStorageKeys) {
+				const value = localStorage.getItem(key)
+				if (key && value) {
+					try {
+						const collection = JSON.parse(value) as AnyMatchCollection
+						if (!isPlainObject(collection)) {
+							console.warn(`Match collection with key ${key} is not an object and will be skipped. value: ${value}`)
+							continue
 						}
+						if (!collection.hasOwnProperty('version') || collection.version < CURRENT_MATCH_DATA_VERSION) {
+							transformCollectionToLatestVersion(collection, key)
+						}
+						this.matchCollections.push(collection as AnyMatchCollection)
+					} catch (error) {
+						console.error(`Failed to parse match collection from localStorage with key ${key}:`, error)
 					}
-				} catch (error) {
-					console.error('Failed to parse matches from storage:', error)
-					this.matchCollections = []
 				}
-			} else {
-				this.matchCollections = []
 			}
+			console.info('Loaded match collections:', this.matchCollections)
 		},
 		/**
 		 * Saves the current state of match collections to local storage.
 		 * This should be called whenever a match collection is added, updated, or deleted.
 		 */
 		saveToStorage() {
-			this.saveMatchCollectionListToStorage()
 			for (const collection of this.matchCollections) {
 				this.saveMatchCollectionToStorage(collection)
 			}
-		},
-		/**
-		 * Saves the list of match collection names to local storage.
-		 * This is used to keep track of all match collections available in the store.
-		 */
-		saveMatchCollectionListToStorage() {
-			localStorage.setItem(
-				STORAGE_KEYS.MATCH_COLLECTION_LIST,
-				JSON.stringify(this.getMatchCollectionNameList),
-			)
 		},
 		/**
 		 * Saves a specific match collection to local storage.
@@ -85,11 +76,7 @@ export const useMatchStore = defineStore('matchStore', {
 		 * @param collection : AnyMatchCollection - The match collection to save.
 		 */
 		saveMatchCollectionToStorage(collection: AnyMatchCollection) {
-			if (!this.getMatchCollectionNameList.includes(collection.name)) {
-				console.warn(`Match collection with name ${collection.name} does not exist.`)
-				return
-			}
-			localStorage.setItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.name, JSON.stringify(collection))
+			localStorage.setItem(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.uuid, JSON.stringify(collection))
 		},
 		/**
 		 * Adds a new match collection to the store and saves it to local storage.
@@ -105,7 +92,7 @@ export const useMatchStore = defineStore('matchStore', {
 			}
 
 			this.matchCollections.push(collection)
-			this.saveToStorage()
+			this.saveMatchCollectionToStorage(collection)
 		},
 		/**
 		 * Updates an existing match collection in the store and saves it to local storage.
@@ -134,22 +121,21 @@ export const useMatchStore = defineStore('matchStore', {
 			}
 
 			this.matchCollections = this.matchCollections.filter((collection) => collection.name !== name)
-			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + name)
-			this.saveMatchCollectionListToStorage()
+			localStorage.removeItem(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.uuid)
 		},
 		/**
 		 * Deletes a match from a specific match collection.
 		 *
-		 * @param matchId : number - The ID of the match to delete.
+		 * @param matchId : string - The uuid of the match to delete.
 		 * @param collectionName : string - The name of the match collection from which to delete the match.
 		 */
-		deleteMatch(matchId: number, collectionName: string) {
+		deleteMatch(matchId: string, collectionName: string) {
 			const collection = this.getMatchCollectionByName(collectionName)
 			if (!collection) {
 				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
-			const matchIndex = collection.matches.findIndex((match) => match.id === matchId)
+			const matchIndex = collection.matches.findIndex((match) => match.uuid === matchId)
 			if (matchIndex === -1) {
 				console.warn(`Match with id ${matchId} does not exist in collection ${collectionName}.`)
 				return
@@ -169,12 +155,12 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
-			const matchIndex = collection.matches.findIndex((m: Match | RankedMatch) => m.id === match.id)
+			const matchIndex = collection.matches.findIndex((m: Match | RankedMatch) => m.uuid === match.uuid)
 			if (matchIndex === -1) {
-				console.warn(`Match with id ${match.id} does not exist in collection ${collectionName}.`)
+				console.warn(`Match with id ${match.uuid} does not exist in collection ${collectionName}.`)
 				return
 			}
-			;(collection.matches as (Match | RankedMatch)[])[matchIndex] = match
+			collection.matches[matchIndex] = match
 			this.saveMatchCollectionToStorage(collection)
 		},
 		/**
@@ -189,19 +175,60 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
-			if (collection.matches.some((m: Match | RankedMatch) => m.id === match.id)) {
-				console.warn(`Match with id ${match.id} already exists in collection ${collectionName}.`)
+			if (collection.matches.some((m: Match | RankedMatch) => m.uuid === match.uuid)) {
+				console.warn(`Match with id ${match.uuid} already exists in collection ${collectionName}.`)
 				return
 			}
-			;(collection.matches as (Match | RankedMatch)[]).push(match)
+			if (collection.type === 'ranked') {
+				// Only allow RankedMatch in ranked collections
+				if ('playerElo' in match && 'opponentElo' in match) {
+					(collection.matches as RankedMatch[]).push(match as RankedMatch)
+				} else {
+					console.warn('Trying to add a non-ranked match to a ranked collection.')
+					return
+				}
+			} else {
+				// Only allow Match in non-ranked collections
+				if (!('playerElo' in match) && !('opponentElo' in match)) {
+					(collection.matches as Match[]).push(match as Match)
+				} else {
+					console.warn('Trying to add a ranked match to a non-ranked collection.')
+					return
+				}
+			}
 			this.saveMatchCollectionToStorage(collection)
 		},
 		resetStore() {
-			localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_LIST)
-			this.matchCollections.forEach((collection: AnyMatchCollection) =>
-				localStorage.removeItem(STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.name),
-			)
 			this.matchCollections = []
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i) || ''
+				if (key.startsWith(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX)) {
+					localStorage.removeItem(key)
+				}
+			}
 		},
 	},
 })
+
+function transformCollectionToLatestVersion(collection: AnyMatchCollection, key: string) {
+	transformMatchCollectionWithOutdatedVersion(collection)
+
+	const correctKey = LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX + collection.uuid
+	if (key !== correctKey) {
+		localStorage.setItem(correctKey, JSON.stringify(collection))
+		localStorage.removeItem(key)
+	} else {
+		localStorage.setItem(key, JSON.stringify(collection))
+	}
+}
+
+function deleteOldData() {
+	const localStorageKeys = Object.keys(localStorage).filter(key => key.startsWith(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX + "list"))
+	localStorageKeys.forEach(key => localStorage.removeItem(key))
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' &&
+		value !== null &&
+		!Array.isArray(value);
+}

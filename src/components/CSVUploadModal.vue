@@ -119,6 +119,7 @@ import type {
 import { CSV_MATCH_MAPPING } from '@/constants'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
@@ -392,7 +393,7 @@ function buildCollection(): MatchCollection | void {
 
 	const matches: (Match | RankedMatch)[] = []
 	let index = -1
-	let lastId = -1
+	let lastId = ""
 
 	let match: Match | RankedMatch | null = null
 	while (++index < csvData.value.length) {
@@ -411,7 +412,7 @@ function buildCollection(): MatchCollection | void {
 			won: won,
 		}
 
-		const id: number = parseInt(rows[index][headerMappings.value[matchDataMapping.id]])
+		const id: string = rows[index][headerMappings.value[matchDataMapping.id]]
 
 		if (id !== lastId) {
 			if (match !== null) {
@@ -434,7 +435,9 @@ function buildCollection(): MatchCollection | void {
 				const opponentElo: number = isNaN(opponentEloRaw) || opponentEloRaw < 0 ? -1 : opponentEloRaw
 
 				match = {
-					id: id,
+					uuid: crypto.randomUUID(),
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
 					playerElo: playerElo,
 					opponentElo: opponentElo,
 					opponentName: opponentName,
@@ -443,7 +446,9 @@ function buildCollection(): MatchCollection | void {
 				} as RankedMatch
 			} else {
 				match = {
-					id: id,
+					uuid: crypto.randomUUID(),
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
 					opponentName: opponentName,
 					rounds: [],
 					links: links,
@@ -463,7 +468,8 @@ function buildCollection(): MatchCollection | void {
 	const date = new Date().toISOString()
 
 	const matchCollection = {
-		id: nextAvailableId.value,
+		uuid: crypto.randomUUID(),
+		version: CURRENT_MATCH_DATA_VERSION,
 		createdAt: date,
 		updatedAt: date,
 		name: matchCollectionName.value,

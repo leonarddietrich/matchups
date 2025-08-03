@@ -2,8 +2,10 @@
  * Rivals of Aether 2 Utilities
  */
 
-import type { Rival, Stage, RivalName, StageName } from '@/types/roa2Types';
+import type { Rival, Stage, RivalName, StageName, Match,
+	RankedMatch, AnyMatchCollection } from '@/types/roa2Types'
 import { RIVALS, STAGES } from '@/constants/roa2';
+import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match';
 
 /**
  * Retrieves a rival by their name.
@@ -74,4 +76,46 @@ export function getStageIconPath(stage: Stage): string {
 export function getStageIconPathByName(stageName: StageName): string {
 	const stage = getStageByName(stageName)
 	return stage ? getStageIconPath(stage) : ''
+}
+
+export function transformMatchCollectionWithOutdatedVersion(collection: AnyMatchCollection) {
+	const oldVersion = collection.hasOwnProperty('version') ? (collection as { version: number }).version : 0
+		if (oldVersion < 1.0) {
+			console.info(`Transforming match collection '${collection.name}' from version ${oldVersion} to ${CURRENT_MATCH_DATA_VERSION}`)
+			console.info('Original collection:', {...collection})
+			delete ((collection as unknown) as Record<string, unknown>).id
+			collection.uuid = collection.uuid || crypto.randomUUID()
+			collection.version = CURRENT_MATCH_DATA_VERSION
+			transformMatchesToVersion1(collection.matches, collection.type === 'ranked')
+			console.info('Transformed collection:', collection)
+		}
+}
+
+function transformMatchesToVersion1(matches: (Match | RankedMatch)[], isRanked: boolean) {
+	for (const match of matches) {
+		if (!isRanked){
+			if (match.hasOwnProperty('playerElo')) {
+				delete ((match as unknown) as Record<string, unknown>).playerElo
+			}
+			if (match.hasOwnProperty('opponentElo')) {
+				delete ((match as unknown) as Record<string, unknown>).opponentElo
+			}
+		}
+		if (match.hasOwnProperty('id')){
+			delete ((match as unknown) as Record<string, unknown>).id
+		}
+		if (!match.hasOwnProperty('uuid')) {
+			match.uuid = crypto.randomUUID()
+		}
+		if (!match.hasOwnProperty('createdAt')) {
+			const date = new Date()
+			match.createdAt = date.toISOString()
+			match.updatedAt = date.toISOString()
+			// Synchronous delay to ensure unique timestamps
+			const start = Date.now()
+			while (Date.now() - start < 1) {
+				// Blocking wait
+			}
+		}
+	}
 }

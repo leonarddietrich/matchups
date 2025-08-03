@@ -98,9 +98,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import BaseModal from './BaseModal.vue'
-import type { AnyMatchCollection } from '@/types/roa2Types'
+import type { AnyMatchCollection, Match, RankedMatch } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+import { CURRENT_MATCH_DATA_VERSION, MATCH_TYPES } from '@/constants/match'
+import { transformMatchCollectionWithOutdatedVersion } from '@/scripts/roa2'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
@@ -116,10 +118,8 @@ const validationErrors = ref<string[]>([])
 const resolutionStrategy = ref<'replace' | 'merge' | 'newName' | 'cancel'>('cancel')
 
 // Helper function to compare matches for equality (excluding timestamps)
-function areMatchesEqual(match1: AnyMatchCollection['matches'][0], match2: AnyMatchCollection['matches'][0]): boolean {
-	// Compare all relevant properties except any that might differ but are acceptable
+function areMatchesEqual(match1: Match | RankedMatch, match2: Match | RankedMatch): boolean {
 	const props1 = {
-		id: match1.id,
 		opponentName: match1.opponentName,
 		opponentElo: 'opponentElo' in match1 ? match1.opponentElo : undefined,
 		playerElo: 'playerElo' in match1 ? match1.playerElo : undefined,
@@ -128,7 +128,6 @@ function areMatchesEqual(match1: AnyMatchCollection['matches'][0], match2: AnyMa
 	}
 
 	const props2 = {
-		id: match2.id,
 		opponentName: match2.opponentName,
 		opponentElo: 'opponentElo' in match2 ? match2.opponentElo : undefined,
 		playerElo: 'playerElo' in match2 ? match2.playerElo : undefined,
@@ -148,7 +147,8 @@ const conflictInfo = computed(() => {
 		c.name.toLowerCase().trim() === jsonData.value!.name.toLowerCase().trim()
 	)
 
-	const matchIdConflicts: number[] = []
+	/** list of uuids with conflicts */
+	const matchIdConflicts: string[] = []
 
 	// Check for match ID conflicts if we want to merge
 	if (nameExists) {
@@ -158,16 +158,16 @@ const conflictInfo = computed(() => {
 
 		if (targetCollection) {
 			// Create a map of existing matches by ID for quick lookup
-			const existingMatchesById = new Map(targetCollection.matches.map(m => [m.id, m]))
+			const existingMatchesById = new Map(targetCollection.matches.map(m => [m.uuid, m]))
 
 			// Check each new match for conflicts
 			for (const newMatch of jsonData.value!.matches) {
-				const existingMatch = existingMatchesById.get(newMatch.id)
+				const existingMatch = existingMatchesById.get(newMatch.uuid)
 				if (existingMatch) {
 					// Match ID exists, check if they are identical
 					if (!areMatchesEqual(newMatch, existingMatch)) {
 						// Same ID but different content - this is a real conflict
-						matchIdConflicts.push(newMatch.id)
+						matchIdConflicts.push(newMatch.uuid)
 					}
 					// If they are identical, no conflict (this is okay)
 				}
@@ -188,8 +188,8 @@ const conflictInfo = computed(() => {
 
 const canImport = computed(() => {
 	return jsonData.value &&
-		   validationErrors.value.length === 0 &&
-		   (!conflictInfo.value || resolutionStrategy.value !== 'cancel')
+		validationErrors.value.length === 0 &&
+		(!conflictInfo.value || resolutionStrategy.value !== 'cancel')
 })
 
 // Watch for conflict changes and adjust resolution strategy if needed
@@ -260,7 +260,10 @@ function validateJsonData(data: unknown) {
 	}
 
 	// Validate type
-	if (obj.type && !['ranked', 'casual', 'friendly', 'tournament'].includes(obj.type as string)) {
+	if (
+		obj.type &&
+		!MATCH_TYPES.includes(obj.type as typeof MATCH_TYPES[number])
+	) {
 		validationErrors.value.push(`Invalid collection type: ${obj.type}`)
 	}
 
@@ -317,7 +320,10 @@ function validateJsonData(data: unknown) {
 function importCollection() {
 	if (!jsonData.value || !canImport.value) return
 
-	const collection = { ...jsonData.value }
+	const collection = { ...jsonData.value } as AnyMatchCollection
+	if(!collection.hasOwnProperty("version") || collection.version < CURRENT_MATCH_DATA_VERSION) {
+		transformMatchCollectionWithOutdatedVersion(collection)
+	}
 
 	switch (resolutionStrategy.value) {
 		case 'replace':
@@ -337,17 +343,17 @@ function importCollection() {
 			const targetCollection = matchStore.getMatchCollectionByName(collection.name)
 			if (targetCollection) {
 				// Create a map of existing matches by ID for intelligent merging
-				const existingMatchesById = new Map(targetCollection.matches.map(m => [m.id, m]))
+				const existingMatchesById = new Map(targetCollection.matches.map(m => [m.uuid, m]))
 				const matchesToAdd = []
 
 				// Check each new match
 				for (const newMatch of collection.matches) {
-					const existingMatch = existingMatchesById.get(newMatch.id)
+					const existingMatch = existingMatchesById.get(newMatch.uuid)
 					if (existingMatch) {
 						// Match ID exists, check if they are identical
 						if (!areMatchesEqual(newMatch, existingMatch)) {
 							// This should not happen if conflict detection worked correctly
-							alert(`Cannot merge: Match ID ${newMatch.id} has conflicting content. This should not happen.`)
+							alert(`Cannot merge: Match ID ${newMatch.uuid} has conflicting content. This should not happen.`)
 							return
 						}
 						// If identical, skip adding (avoid duplicates)

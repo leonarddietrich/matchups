@@ -289,24 +289,6 @@ const isFormValid = computed(() => {
 	return hasOpponentName && allRoundsValid
 })
 
-function generateNextMatchId(): number {
-	const collectionName = selectionStore.getSelectedMatchCollectionName
-	if (!collectionName) return 1
-
-	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
-	if (!currentCollection) return 1
-
-	const existingIds = currentCollection.matches.map((match: Match | RankedMatch) => match.id)
-	if (existingIds.length === 0) return 1
-
-	// Find the next available ID
-	let id = 1
-	while (existingIds.includes(id)) {
-		id++
-	}
-	return id
-}
-
 function saveMatch() {
 	hasAttemptedSave.value = true
 
@@ -329,7 +311,9 @@ function saveMatch() {
 
 	const newMatch: Match | RankedMatch = isRankedCollection.value
 		? {
-			id: generateNextMatchId(),
+			uuid: crypto.randomUUID(),
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
 			playerElo: (!playerElo.value || playerElo.value < 0) ? -1 : playerElo.value,
 			opponentElo: (!opponentElo.value || opponentElo.value < 0) ? -1 : opponentElo.value,
 			opponentName: opponentName.value.trim(),
@@ -337,9 +321,9 @@ function saveMatch() {
 			links: links.value.filter(link => link.text.trim() !== '' || link.link.trim() !== '')
 		} as RankedMatch
 		: {
-			id: generateNextMatchId(),
-			playerElo: -1,
-			opponentElo: -1,
+			uuid: crypto.randomUUID(),
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
 			opponentName: opponentName.value.trim(),
 			rounds: [...rounds.value],
 			links: links.value.filter(link => link.text.trim() !== '' || link.link.trim() !== '')

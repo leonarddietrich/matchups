@@ -37,7 +37,7 @@
 	<div class="match-display" id="matchesDisplay" v-if="matchCollection">
 		<MatchItem
 			v-for="match in filteredMatches"
-			:key="match.id"
+			:key="match.uuid"
 			:match="match"
 			:filters="selectionStore.getCurrentFilters"
 			@openModifyModal="openModifyModal"
@@ -47,8 +47,8 @@
 	<!-- Add match ID display for each match -->
 	<div v-if="matchCollection" class="match-ids">
 		<h3>Match IDs Debug Info:</h3>
-		<div v-for="match in matchCollection.matches" :key="match.id" class="match-id-item">
-			<strong>Match ID:</strong> {{ match.id }} | <strong>Opponent:</strong> {{ match.opponentName }} |
+		<div v-for="match in matchCollection.matches" :key="match.uuid" class="match-id-item">
+			<strong>Match ID:</strong> {{ match.uuid }} | <strong>Opponent:</strong> {{ match.opponentName }} |
 			<strong>Rounds:</strong> {{ match.rounds.length }}
 		</div>
 		<div class="debug-info">

@@ -64,9 +64,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import BaseModal from './BaseModal.vue'
-import type { MatchCollection, MatchType } from '@/types/roa2Types'
+import type { AnyMatchCollection, MatchType } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+import { CURRENT_MATCH_DATA_VERSION } from '@/constants'
 
 const props = defineProps<{
 	display: boolean
@@ -115,7 +116,9 @@ function createCollection() {
 
 	const date = new Date().toISOString()
 
-	const newCollection: MatchCollection = {
+	const newCollection: AnyMatchCollection = {
+		version: CURRENT_MATCH_DATA_VERSION,
+		uuid: crypto.randomUUID(),
 		createdAt: date,
 		updatedAt: date,
 		name: collectionName.value.trim(),

@@ -316,10 +316,15 @@ const originalMatch = ref<Match | RankedMatch | null>(null)
 
 // Modified match data (working copy)
 const modifiedMatch = ref<Match | RankedMatch>({
-	id: 0,
+	uuid: '',
 	opponentName: '',
 	rounds: [],
-	links: []
+	links: [],
+	// RankedMatch fields (optional for Match, but required for RankedMatch)
+	playerElo: -1,
+	opponentElo: -1,
+	createdAt: '',
+	updatedAt: ''
 })
 
 const hasAttemptedSave = ref<boolean>(false)
@@ -443,7 +448,7 @@ function saveMatch() {
 
 	// Update the match in the collection
 	const updatedMatches = currentCollection.matches.map((match: Match | RankedMatch) =>
-		match.id === finalMatch.id ? finalMatch : match
+		match.uuid === finalMatch.uuid ? finalMatch : match
 	)
 
 	const updatedCollection = {
@@ -488,7 +493,7 @@ function deleteMatch() {
 	}
 
 	// Remove the match from the collection
-	const updatedMatches = currentCollection.matches.filter((match: Match | RankedMatch) => match.id !== props.match!.id)
+	const updatedMatches = currentCollection.matches.filter((match: Match | RankedMatch) => match.uuid !== props.match!.uuid)
 
 	const updatedCollection = {
 		...currentCollection,
@@ -499,7 +504,7 @@ function deleteMatch() {
 	// Save the updated collection back to storage
 	matchStore.updateMatchCollection(updatedCollection)
 
-	console.log('Match deleted:', props.match.id)
+	console.log('Match deleted:', props.match.uuid)
 
 	// Close modal
 	emit('closeModifyMatchModal')
@@ -515,10 +520,14 @@ function resetForm() {
 	hasAttemptedSave.value = false
 	originalMatch.value = null
 	modifiedMatch.value = {
-		id: 0,
+		uuid: '',
 		opponentName: '',
 		rounds: [],
-		links: []
+		links: [],
+		playerElo: -1,
+		opponentElo: -1,
+		createdAt: '',
+		updatedAt: ''
 	}
 }
 </script>

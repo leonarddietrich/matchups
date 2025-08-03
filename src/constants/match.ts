@@ -1,7 +1,8 @@
 /**
  * Match Types
  */
-export const MATCH_TYPES = ['ranked', 'casual', 'friendly', 'tournament'] as const;
+export const MATCH_TYPES = ['ranked', 'casual', 'friendly', 'tournament'] as const
+export const CURRENT_MATCH_DATA_VERSION = 1.0
 
 /**
  * CSS Column Mapping for CSV Upload
@@ -17,7 +18,7 @@ export const CSV_MATCH_MAPPING = {
   opponentRival: 6,
   won: 7,
   links: 8,
-} as const;
+} as const
 
 /**
  * Match Properties for CSV Upload
@@ -33,5 +34,5 @@ export const MATCH_PROPERTIES = [
   'opponentRival',
   'won',
   'links',
-] as const;
+] as const
 

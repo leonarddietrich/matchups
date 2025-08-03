@@ -1,6 +1,12 @@
+/** Selection Store
+ * This store manages the selection of match collections, player characters, opponent characters,
+ * and filters for matches. It provides methods to set and reset selections, as well as to
+ * load and save selections to session storage.
+ */
+
 import { defineStore } from 'pinia'
 import type { RivalName, MatchFilters } from '@/types/roa2Types'
-import { STORAGE_KEYS } from '@/constants'
+import { SESSION_STORAGE_KEYS } from '@/constants'
 
 export const useSelectionStore = defineStore('selectionStore', {
 	state: () => ({
@@ -11,15 +17,14 @@ export const useSelectionStore = defineStore('selectionStore', {
 	}),
 	actions: {
 		/**
-		 * Loads the active match collection name from localStorage.
-		 * This should be called when the application starts to restore the previous selection.
+		 * Initializes the selection store by loading match collection name and filters from session storage.
+		 * This should be called when the application starts to restore previous state.
 		 */
 		loadFromStorage() {
-			// Load match collection name
-			const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID)
-			if (raw) {
+			const activeMatchRaw = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACTIVE_MATCH_COLLECTION)
+			if (activeMatchRaw) {
 				try {
-					const name = JSON.parse(raw) as string
+					const name = JSON.parse(activeMatchRaw) as string
 					this.matchCollectionName = name
 					console.info('Loaded match collection name from storage:', name)
 				} catch (error) {
@@ -27,8 +32,7 @@ export const useSelectionStore = defineStore('selectionStore', {
 				}
 			}
 
-			// Load filters
-			const filtersRaw = localStorage.getItem(STORAGE_KEYS.MATCH_FILTERS)
+			const filtersRaw = sessionStorage.getItem(SESSION_STORAGE_KEYS.MATCH_FILTERS)
 			if (filtersRaw) {
 				try {
 					const filters = JSON.parse(filtersRaw) as MatchFilters
@@ -55,28 +59,23 @@ export const useSelectionStore = defineStore('selectionStore', {
 		setMatchCollectionName(name: string) {
 			console.info('Setting match collection name:', name)
 			this.matchCollectionName = name
-			// Save to localStorage
-			localStorage.setItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID, JSON.stringify(name))
-			// Reset filters when changing match collection
+			sessionStorage.setItem(SESSION_STORAGE_KEYS.ACTIVE_MATCH_COLLECTION, JSON.stringify(name))
 			this.resetFilters()
 		},
 		resetMatchCollectionName() {
 			console.info('Resetting match collection name')
 			this.matchCollectionName = null
-			// Remove from localStorage
-			localStorage.removeItem(STORAGE_KEYS.ACTIVE_MATCH_COLLECTION_ID)
+			sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACTIVE_MATCH_COLLECTION)
 		},
 		setFilters(filters: MatchFilters) {
 			console.info('Setting filters:', filters)
 			this.currentFilters = filters
-			// Save to localStorage
-			localStorage.setItem(STORAGE_KEYS.MATCH_FILTERS, JSON.stringify(filters))
+			sessionStorage.setItem(SESSION_STORAGE_KEYS.MATCH_FILTERS, JSON.stringify(filters))
 		},
 		resetFilters() {
 			console.info('Resetting filters')
 			this.currentFilters = {}
-			// Remove from localStorage
-			localStorage.removeItem(STORAGE_KEYS.MATCH_FILTERS)
+			sessionStorage.removeItem(SESSION_STORAGE_KEYS.MATCH_FILTERS)
 		},
 	},
 	getters: {

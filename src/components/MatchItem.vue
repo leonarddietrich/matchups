@@ -3,7 +3,7 @@
 		<div>
 			<div class="match-header clickable" @click="openModifyModal">
 				<div>
-					<div>{{ props.match.id }}</div>
+					<div>You</div>
 					<div v-if="isRankedCollection && 'playerElo' in props.match">{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
 					<div v-else>{{ props.match.opponentName }}</div>
 				</div>
@@ -16,7 +16,7 @@
 		<div class="match-body clickable" @click="openModifyModal">
 			<MatchRoundItem
 				v-for="(round, round_index) in displayedRounds"
-				:key="props.match.id + '_' + round_index"
+				:key="props.match.uuid + '_' + round_index"
 				v-bind:stage="round.stage"
 				:player="round.playerRival"
 				:opponent="round.opponentRival"
