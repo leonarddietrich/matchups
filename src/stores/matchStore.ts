@@ -36,7 +36,6 @@ export const useMatchStore = defineStore('matchStore', {
 		 */
 		loadFromStorage() {
 			console.info('Loading match collections from local storage...')
-			deleteOldData()
 
 			this.matchCollections = []
 			const localStorageKeys = Object.keys(localStorage).filter(key => key.startsWith(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX))
@@ -47,7 +46,8 @@ export const useMatchStore = defineStore('matchStore', {
 					try {
 						const collection = JSON.parse(value) as AnyMatchCollection
 						if (!isPlainObject(collection)) {
-							console.warn(`Match collection with key ${key} is not an object and will be skipped. value: ${value}`)
+							console.warn(`Match collection with key ${key} is not an object and will be deleted. value: ${value}`)
+							localStorage.removeItem(key)
 							continue
 						}
 						if (!collection.hasOwnProperty('version') || collection.version < CURRENT_MATCH_DATA_VERSION) {
@@ -220,11 +220,6 @@ function transformCollectionToLatestVersion(collection: AnyMatchCollection, key:
 	} else {
 		localStorage.setItem(key, JSON.stringify(collection))
 	}
-}
-
-function deleteOldData() {
-	const localStorageKeys = Object.keys(localStorage).filter(key => key.startsWith(LOCAL_STORAGE_KEYS.MATCH_COLLECTION_PREFIX + "list"))
-	localStorageKeys.forEach(key => localStorage.removeItem(key))
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
