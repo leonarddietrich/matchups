@@ -1,2 +1,5 @@
 # SPA fallback for Vue Router
+# Handle specific routes first, then fallback
+/insights /index.html 200
+/matches /index.html 200
 /*    /index.html   200
