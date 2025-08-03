@@ -92,6 +92,9 @@ export function transformMatchCollectionWithOutdatedVersion(collection: AnyMatch
 }
 
 function transformMatchesToVersion1(matches: (Match | RankedMatch)[], isRanked: boolean) {
+	let timestampCounter = 0
+	const baseTimestamp = Date.now()
+
 	for (const match of matches) {
 		if (!isRanked){
 			if (match.hasOwnProperty('playerElo')) {
@@ -108,14 +111,11 @@ function transformMatchesToVersion1(matches: (Match | RankedMatch)[], isRanked: 
 			match.uuid = crypto.randomUUID()
 		}
 		if (!match.hasOwnProperty('createdAt')) {
-			const date = new Date()
-			match.createdAt = date.toISOString()
-			match.updatedAt = date.toISOString()
-			// Synchronous delay to ensure unique timestamps
-			const start = Date.now()
-			while (Date.now() - start < 1) {
-				// Blocking wait
-			}
+			// Create unique timestamps by incrementing by 1 second for each match
+			const uniqueTimestamp = new Date(baseTimestamp + (timestampCounter * 1000))
+			match.createdAt = uniqueTimestamp.toISOString()
+			match.updatedAt = uniqueTimestamp.toISOString()
+			timestampCounter++
 		}
 	}
 }
