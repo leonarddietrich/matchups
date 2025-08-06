@@ -1,11 +1,16 @@
 <template>
 	<div class="home">
-		<h1>Home</h1>
+		<h1>Welcome to Matchups</h1>
 		<p>
-			Welcome to the Rivals of Aether Tournament Tracker! This application allows you to track your
-			matches, view results, and analyze your performance.
+			Track your Rivals of Aether 2 matches and discover strategic insights to improve your gameplay.
 		</p>
 		<p>
+			<strong>Key Features:</strong><br>
+			<strong>Match Collections</strong> - Organize your matches into collections for easy access<br>
+			<strong>Strategic Insights</strong> - Analyze which characters work best on specific stages against different opponents<br>
+			<strong>VOD Integration</strong> - Attach replay links to your matches for review (currently only redirects, no miniplayer yet)<br>
+		</p>
+		<p v-if ="matchStore.getMatchCollectionNameList.length === 0">
 			To get started, create a new match collection or upload existing data.
 		</p>
 

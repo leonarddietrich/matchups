@@ -104,36 +104,36 @@ export const RIVALS: Rival[] = [
 		iconPath: ClairenPortrait,
 		color: '#FF0000',
 	},
-	{
-		name: 'Sylvanos',
-		element: 'Earth',
-		iconPath: SylvanosPortrait,
-		color: '#228B22',
-	},
-	{
-		name: 'Elliana',
-		element: 'Air',
-		iconPath: EllianaPortrait,
-		color: '#B0E0E6',
-	},
-	{
-		name: 'Mollo',
-		element: 'Fire',
-		iconPath: MolloPortrait,
-		color: '#A0522D',
-	},
-	{
-		name: 'Hodan',
-		element: 'Earth',
-		iconPath: HodanPortrait,
-		color: '#8B4513',
-	},
-	{
-		name: 'Pomme',
-		element: 'Air',
-		iconPath: PommePortrait,
-		color: '#FF69B4',
-	},
+	// {
+	// 	name: 'Sylvanos',
+	// 	element: 'Earth',
+	// 	iconPath: SylvanosPortrait,
+	// 	color: '#228B22',
+	// },
+	// {
+	// 	name: 'Elliana',
+	// 	element: 'Air',
+	// 	iconPath: EllianaPortrait,
+	// 	color: '#B0E0E6',
+	// },
+	// {
+	// 	name: 'Mollo',
+	// 	element: 'Fire',
+	// 	iconPath: MolloPortrait,
+	// 	color: '#A0522D',
+	// },
+	// {
+	// 	name: 'Hodan',
+	// 	element: 'Earth',
+	// 	iconPath: HodanPortrait,
+	// 	color: '#8B4513',
+	// },
+	// {
+	// 	name: 'Pomme',
+	// 	element: 'Air',
+	// 	iconPath: PommePortrait,
+	// 	color: '#FF69B4',
+	// },
 	{
 		name: 'Olympia',
 		element: 'Water',
@@ -152,12 +152,12 @@ export const RIVALS: Rival[] = [
 		iconPath: FleetPortrait,
 		color: '#FFFF00',
 	},
-	{
-		name: 'La Reina',
-		element: 'Fire',
-		iconPath: LaReinaPortrait,
-		color: '#C71585',
-	},
+	// {
+	// 	name: 'La Reina',
+	// 	element: 'Fire',
+	// 	iconPath: LaReinaPortrait,
+	// 	color: '#C71585',
+	// },
 ]
 
 /**
