@@ -4,8 +4,8 @@
  */
 export const ROUTES = {
   HOME: '/',
-  MATCHES: '/matches',
-  INSIGHTS: '/insights',
+  MATCHES: '/matches/',
+  INSIGHTS: '/insights/',
 } as const;
 
 /**

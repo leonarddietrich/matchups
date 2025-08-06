@@ -5,9 +5,9 @@
 		</div>
 		<MatchCollectionSelector />
 		<nav>
-			<RouterLink to="/">Home</RouterLink>
-			<RouterLink to="/matches">Matches</RouterLink>
-			<RouterLink to="/insights">Insight</RouterLink>
+			<RouterLink :to="ROUTES.HOME">Home</RouterLink>
+			<RouterLink :to="ROUTES.MATCHES">Matches</RouterLink>
+			<RouterLink :to="ROUTES.INSIGHTS">Insight</RouterLink>
 		</nav>
 	</div>
 
@@ -18,6 +18,7 @@
 
 <script lang="ts" setup>
 import MatchCollectionSelector from './components/MatchCollectionSelector.vue'
+import { ROUTES } from "@/constants";
 </script>
 
 <style scoped lang="css">
