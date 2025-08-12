@@ -53,10 +53,12 @@ export interface Rival {
  * Represents a stage in Rivals of Aether 2.
  *
  * @property {string} name - The name of the stage.
- * @property {string} icon - The path to the stage's icon image.
+ * @property {string} iconPathWebp - The path to the stage's icon image in WEBP format.
+ * @property {string} iconPath - The path to the stage's icon image in PNG format.
  */
 export interface Stage {
 	name: StageName
+	iconPathWebp: string
 	iconPath: string
 }
 

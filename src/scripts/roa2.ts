@@ -4,6 +4,7 @@
 
 import type { Rival, Stage, RivalName, StageName, Match,
 	RankedMatch, AnyMatchCollection } from '@/types/roa2Types'
+import { ImageFormat } from '@/types/shared/media'
 import { RIVALS, STAGES } from '@/constants/roa2';
 import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match';
 
@@ -63,8 +64,9 @@ export function getStageByName(stageName: StageName): Stage | undefined {
  * @param stage - The stage object.
  * @returns {string} - The path to the stage's icon image, or an empty string if the stage is undefined.
  */
-export function getStageIconPath(stage: Stage): string {
-	return stage ? stage.iconPath : ''
+export function getStageIconPath(stage: Stage, format: ImageFormat = ImageFormat.WEBP): string {
+	if (!stage) return ''
+	return format === ImageFormat.WEBP ? stage.iconPathWebp : stage.iconPath
 }
 
 /**
@@ -73,9 +75,9 @@ export function getStageIconPath(stage: Stage): string {
  * @param name - The name of the stage.
  * @returns {string} - The path to the stage's icon image, or an empty string if not found.
  */
-export function getStageIconPathByName(stageName: StageName): string {
+export function getStageIconPathByName(stageName: StageName, format: ImageFormat = ImageFormat.WEBP): string {
 	const stage = getStageByName(stageName)
-	return stage ? getStageIconPath(stage) : ''
+	return stage ? getStageIconPath(stage, format) : ''
 }
 
 export function transformMatchCollectionWithOutdatedVersion(collection: AnyMatchCollection) {

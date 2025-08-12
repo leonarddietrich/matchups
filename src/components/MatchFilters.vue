@@ -7,17 +7,17 @@
 				<!-- Stages Filters -->
 				<div v-if="filters.stages && filters.stages.length > 0" class="filter-category">
 					<span class="category-label">Stages:</span>
-					<div class="category-items">
-						<span
-							v-for="stage in sortedActiveStages"
-							:key="stage"
-							class="filter-tag stage-tag"
-							:style="{ backgroundImage: `url(${getStageIcon(stage)})` }"
-						>
-							{{ stage }}
-							<button @click="removeSingleStageFilter(stage)" class="remove-filter">×</button>
-						</span>
-					</div>
+						<div class="category-items">
+							<span
+								v-for="stage in sortedActiveStages"
+								:key="stage"
+								class="filter-tag stage-tag"
+								:style="{ backgroundImage: `image-set(url(${getStageIcon(stage).webp}) type('image/webp'), url(${getStageIcon(stage).png}) type('image/png'))` }"
+							>
+								{{ stage }}
+								<button @click="removeSingleStageFilter(stage)" class="remove-filter">×</button>
+							</span>
+						</div>
 				</div>
 
 				<!-- Player Character Filters -->
@@ -238,6 +238,7 @@
 import type { MatchFilters, StageName, RivalName, MatchResult, DifficultyLevel } from '@/types/roa2Types'
 import { RIVAL_NAMES, STAGE_NAMES } from '@/constants/roa2'
 import { getStageIconPathByName, getRivalIconPathByName } from '@/scripts/roa2'
+import { ImageFormat } from '@/types/shared/media'
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{
@@ -300,8 +301,11 @@ const sortedActiveOpponentCharacters = computed(() => {
 })
 
 // Helper functions to get icons (using existing utility functions)
-function getStageIcon(stageName: StageName): string {
-	return getStageIconPathByName(stageName)
+function getStageIcon(stageName: StageName): { webp: string; png: string } {
+	return {
+		webp: getStageIconPathByName(stageName, ImageFormat.WEBP),
+		png: getStageIconPathByName(stageName, ImageFormat.PNG),
+	}
 }
 
 function getRivalIcon(rivalName: RivalName): string {

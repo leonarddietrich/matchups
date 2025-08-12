@@ -2,7 +2,10 @@
 	<div class="stages-flex">
 		<div v-for="stage in stageInsights" :key="stage.name" class="stage-item">
 			<div class="icon-container">
-				<img :src="stage.iconPath" :alt="stage.name" class="stage-icon" />
+				<picture>
+					<source :srcset="stage.iconPathWebp" type="image/webp" />
+					<img :src="stage.iconPath" :alt="stage.name" class="stage-icon" loading="lazy" />
+				</picture>
 				<span v-if="stage.timesPlayed > 0" class="win-percentage">
 					{{ Math.round(stageInsights.find((s) => s.name == stage.name)?.percentage ?? 0) }}%
 				</span>

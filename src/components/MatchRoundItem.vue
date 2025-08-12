@@ -1,7 +1,10 @@
 <template>
 	<div class="match-body-rounds">
 		<div :class="`match-body-round-${result}`">
-			<img :src="stageImg.src" class="mx-auto p-1" :alt="stageImg.alt" />
+			<picture>
+				<source :srcset="stageImg.webp" type="image/webp" />
+				<img :src="stageImg.png" class="mx-auto p-1" :alt="stageImg.alt" loading="lazy" />
+			</picture>
 			<img :src="playerImg.src" class="match-body-character mx-auto p-1" :alt="playerImg.alt" />
 			<img :src="opponentImg.src" class="match-body-character mx-auto p-1" :alt="opponentImg.alt" />
 		</div>
@@ -11,6 +14,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { getRivalIconPathByName, getStageIconPathByName } from '@/scripts/roa2'
+import { ImageFormat } from '@/types/shared/media'
 import type { StageName, RivalName } from '@/types/roa2Types'
 
 const props = defineProps<{
@@ -25,29 +29,22 @@ const result = computed(() => {
 })
 
 const stageImg = computed(() => {
-	const iconPath = getStageIconPathByName(props.stage)
-	return getPathToImage(props.stage, iconPath)
+	const webp = getStageIconPathByName(props.stage, ImageFormat.WEBP)
+	const png = getStageIconPathByName(props.stage, ImageFormat.PNG)
+	return {
+		webp,
+		png,
+		alt: props.stage,
+	}
 })
 const playerImg = computed(() => {
 	const iconPath = getRivalIconPathByName(props.player)
-	return getPathToImage(props.player, iconPath)
+	return { src: iconPath, alt: props.player }
 })
 const opponentImg = computed(() => {
 	const iconPath = getRivalIconPathByName(props.opponent)
-	return getPathToImage(props.opponent, iconPath)
+	return { src: iconPath, alt: props.opponent }
 })
-
-function getPathToImage(imageName: string, pathToImage: string) {
-	if (!pathToImage || pathToImage === '') {
-		console.warn(`Image not found: ${imageName}`)
-		return { src: '', alt: imageName }
-	}
-	// The imported assets are already processed URLs by Vite
-	return {
-		src: pathToImage,
-		alt: imageName,
-	}
-}
 </script>
 
 <style scoped>
