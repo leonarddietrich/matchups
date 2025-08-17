@@ -5,16 +5,7 @@
 		</template>
 		<template v-slot:body>
 			<div class="add-match-content">
-				<div class="	co	co	const collectionName = selectionStore.getSelectedMatchCollectionName
-	if (!collectionName) return false
-
-	const currentCollection = matchStore.getMatchCollectionByName(collectionName)collectionName = selectionStore.getSelectedMatchCollectionName
-	if (!collectionName) return false
-
-	const currentCollection = matchStore.getMatchCollectionByName(collectionName)collectionName = selectionStore.getSelectedMatchCollectionName
-	if (!collectionName) return false
-
-	const currentCollection = matchStore.getMatchCollectionByName(collectionName)h-details-section">
+				<div class="match-details-section">
 					<h4>Match Details</h4>
 					<div v-if="isRankedCollection" class="form-group">
 						<label for="player-elo">Player Elo</label>
@@ -67,62 +58,62 @@
 							</button>
 						</div>
 
-						<div class="round-form">
+						<div class="round-form-vertical">
+							<!-- Stage Selection -->
 							<div class="form-group">
-								<label :for="`stage-${index}`">Stage *</label>
-								<select
-									:id="`stage-${index}`"
-									v-model="round.stage"
-									class="form-input"
-									:class="{ 'error': !round.stage && hasAttemptedSave }"
-								>
-									<option value="">-- Select Stage --</option>
-									<option v-for="stage in availableStages" :key="stage" :value="stage">
-										{{ stage }}
-									</option>
-								</select>
-							</div>
-
-							<div class="form-group">
-								<label :for="`player-rival-${index}`">Player Character *</label>
-								<select
-									:id="`player-rival-${index}`"
-									v-model="round.playerRival"
-									class="form-input"
-									:class="{ 'error': !round.playerRival && hasAttemptedSave }"
-								>
-									<option value="">-- Select Character --</option>
-									<option v-for="rival in availableRivals" :key="rival" :value="rival">
-										{{ rival }}
-									</option>
-								</select>
-							</div>
-
-							<div class="form-group">
-								<label :for="`opponent-rival-${index}`">Opponent Character *</label>
-								<select
-									:id="`opponent-rival-${index}`"
-									v-model="round.opponentRival"
-									class="form-input"
-									:class="{ 'error': !round.opponentRival && hasAttemptedSave }"
-								>
-									<option value="">-- Select Character --</option>
-									<option v-for="rival in availableRivals" :key="rival" :value="rival">
-										{{ rival }}
-									</option>
-								</select>
-							</div>
-
-							<div class="form-group checkbox-group">
-								<label :for="`round-won-${index}`" class="checkbox-label">
-									<input
-										:id="`round-won-${index}`"
-										type="checkbox"
-										v-model="round.won"
-										class="checkbox-input"
+								<label>Stage *</label>
+								<div :class="{ 'error': !round.stage && hasAttemptedSave }">
+									<SingleSelection
+										type="stages"
+										v-model="round.stage"
 									/>
-									Round Won
-								</label>
+								</div>
+							</div>
+
+							<!-- Character Selection Row -->
+							<div class="character-selection-row">
+								<div class="form-group">
+									<label>Player Character *</label>
+									<div :class="{ 'error': !round.playerRival && hasAttemptedSave }">
+										<SingleSelection
+											type="characters"
+											v-model="round.playerRival"
+										/>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label>Opponent Character *</label>
+									<div :class="{ 'error': !round.opponentRival && hasAttemptedSave }">
+										<SingleSelection
+											type="characters"
+											v-model="round.opponentRival"
+										/>
+									</div>
+								</div>
+							</div>
+
+							<!-- Result Selection -->
+							<div class="form-group">
+								<label>Round Result *</label>
+								<div class="result-buttons">
+									<button
+										type="button"
+										@click="round.won = true"
+										class="result-button win-button"
+										:class="{ 'selected': round.won === true }"
+									>
+										Win
+									</button>
+									<button
+										type="button"
+										@click="round.won = false"
+										class="result-button loss-button"
+										:class="{ 'selected': round.won === false }"
+									>
+										Loss
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -196,8 +187,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import BaseModal from './BaseModal.vue'
-import type { Round, StageName, RivalName, Match, RankedMatch } from '@/types/roa2Types'
-import { RIVAL_NAMES, STAGE_NAMES } from '@/constants/roa2'
+import SingleSelection from './SingleSelection.vue'
+import type { Round, Match, RankedMatch, StageName, RivalName } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 
@@ -217,10 +208,6 @@ const opponentName = ref<string>('')
 const rounds = ref<Round[]>([createEmptyRound()])
 const links = ref<{ text: string; link: string }[]>([])
 const hasAttemptedSave = ref<boolean>(false)
-
-// Available options
-const availableStages: StageName[] = STAGE_NAMES
-const availableRivals: RivalName[] = RIVAL_NAMES
 
 // Check if current collection is ranked
 const isRankedCollection = computed(() => {
@@ -257,7 +244,7 @@ function createEmptyRound(): Round {
 		stage: '' as StageName,
 		playerRival: '' as RivalName,
 		opponentRival: '' as RivalName,
-		won: false
+		won: undefined as unknown as boolean // Force explicit selection
 	}
 }
 
@@ -284,7 +271,7 @@ function removeLink(index: number) {
 const isFormValid = computed(() => {
 	const hasOpponentName = opponentName.value.trim() !== ''
 	const allRoundsValid = rounds.value.every(round =>
-		round.stage && round.playerRival && round.opponentRival
+		round.stage && round.playerRival && round.opponentRival && round.won !== undefined
 	)
 	return hasOpponentName && allRoundsValid
 })
@@ -393,24 +380,6 @@ function resetForm() {
 	display: block;
 }
 
-.checkbox-group {
-	display: flex;
-	align-items: center;
-}
-
-.checkbox-label {
-	display: flex !important;
-	align-items: center;
-	cursor: pointer;
-	margin-bottom: 0 !important;
-}
-
-.checkbox-input {
-	width: auto !important;
-	margin-right: 0.5rem;
-	transform: scale(1.2);
-}
-
 .round-item,
 .link-item {
 	margin-bottom: 1.5rem;
@@ -435,15 +404,22 @@ function resetForm() {
 	font-size: 1rem;
 }
 
-.round-form,
+.round-form-vertical,
 .link-form {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 1rem;
 }
 
-.round-form .checkbox-group {
-	grid-column: span 2;
+.round-form-vertical {
+	grid-template-columns: 1fr;
+	gap: 1.5rem;
+}
+
+.character-selection-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
 }
 
 .btn-small {
@@ -455,5 +431,52 @@ function resetForm() {
 .btn-add-link {
 	width: 100%;
 	margin-top: 1rem;
+}
+
+/* Icon selection styles - updated for SingleSelection component */
+.error :deep(.selection-grid) {
+	background-color: rgba(255, 68, 68, 0.1);
+	box-shadow: 0 0 0 2px #ff4444;
+}
+
+/* Result buttons */
+.result-buttons {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+}
+
+.result-button {
+	flex: 1;
+	padding: 0.75rem 1.5rem;
+	border: 2px solid rgba(255, 255, 255, 0.2);
+	border-radius: 8px;
+	background-color: rgba(255, 255, 255, 0.05);
+	color: #fff;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.result-button:hover {
+	border-color: rgba(255, 255, 255, 0.4);
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.result-button.selected {
+	border-color: #42b983;
+	background-color: rgba(66, 185, 131, 0.2);
+}
+
+.win-button.selected {
+	border-color: #4caf50;
+	background-color: rgba(76, 175, 80, 0.2);
+	color: #4caf50;
+}
+
+.loss-button.selected {
+	border-color: #f44336;
+	background-color: rgba(244, 67, 54, 0.2);
+	color: #f44336;
 }
 </style>
