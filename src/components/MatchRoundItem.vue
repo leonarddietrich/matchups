@@ -1,10 +1,9 @@
 <template>
 	<div class="match-body-rounds">
-		<div :class="`match-body-round-${result}`">
-			<picture>
-				<source :srcset="stageImg.webp" type="image/webp" />
-				<img :src="stageImg.png" class="mx-auto p-1" :alt="stageImg.alt" loading="lazy" />
-			</picture>
+		<div
+			:class="`match-body-round match-body-round-${result}`"
+			:style="{ backgroundImage: `url(${stageImg.png})` }"
+		>
 			<img :src="playerImg.src" class="match-body-character mx-auto p-1" :alt="playerImg.alt" />
 			<img :src="opponentImg.src" class="match-body-character opponent-character mx-auto p-1" :alt="opponentImg.alt" />
 		</div>
@@ -64,17 +63,56 @@ img {
 	text-align: center;
 }
 
+.match-body-round {
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	min-height: 120px;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 3px solid transparent;
+}
+
 .match-body-round-win {
-	background-color: rgba(132, 255, 138, 0.2);
+	border-color: #00bd7e;
 }
 
 .match-body-round-loss {
-	background-color: rgba(255, 132, 132, 0.2);
+	border-color: #e53e3e;
+}
+
+.match-body-round-win::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #00bd7e30;
+	z-index: 1;
+}
+
+.match-body-round-loss::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #e53e3e30;
+	z-index: 1;
 }
 
 .match-body-character {
 	height: 100px;
 	width: 100px;
+	position: relative;
+	z-index: 10;
+	filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
 .opponent-character {

@@ -47,6 +47,7 @@ export default defineComponent({
 	background: rgba(0, 0, 0, 0.5);
 	transition: opacity 0.3s ease;
 	display: flex;
+	z-index: 1000;
 }
 
 .modal-container {
