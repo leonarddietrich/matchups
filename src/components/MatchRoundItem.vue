@@ -72,9 +72,8 @@ img {
 	align-items: center;
 	justify-content: space-around;
 	min-height: 120px;
-	border-radius: 8px;
 	overflow: hidden;
-	border: 3px solid transparent;
+	border: 1px solid transparent;
 }
 
 .match-body-round-win {
