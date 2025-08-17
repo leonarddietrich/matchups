@@ -10,7 +10,7 @@
 			]"
 		>
 			<div class="character-image">
-				<img :src="rival.iconPath" :alt="rival.name" />
+				<img :src="rival.iconPath" :alt="rival.name" :class="{ 'opponent-character': isOpponent }" />
 			</div>
 		</div>
 	</div>
@@ -31,6 +31,10 @@ export default defineComponent({
 			type: [String, null] as unknown as () => RivalName | null,
 			required: true,
 			validator: (value: unknown) => typeof value === 'string' || value === null,
+		},
+		isOpponent: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	emits: ['characterSelected'],
@@ -66,6 +70,7 @@ export default defineComponent({
 	height: 100%;
 	padding: 10px;
 }
+
 .character-selection {
 	display: flex;
 	width: 80px;
@@ -73,33 +78,43 @@ export default defineComponent({
 	margin: 5px;
 	cursor: pointer;
 }
+
 .character-selection:hover {
 	transform: scale(1.05);
 	transition: transform 0.2s ease-in-out;
 }
+
 .character-image {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
 	border-radius: 10px;
 }
+
 .character-image img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	border-radius: 10px;
 }
+
 .character-image img:hover {
 	filter: brightness(0.8);
 	transition: filter 0.2s ease-in-out;
 }
+
 .character-selection.selected {
 	border: 3px solid turquoise;
 	border-radius: 12px;
 	box-sizing: border-box;
 }
+
 .character-selection.disabled {
 	opacity: 0.2;
 	pointer-events: none;
+}
+
+.opponent-character {
+	transform: scaleX(-1);
 }
 </style>

@@ -149,6 +149,7 @@
 											<SingleSelection
 												type="characters"
 												v-model="round.opponentRival"
+												:isOpponent="true"
 											/>
 										</div>
 									</div>

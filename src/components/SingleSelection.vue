@@ -12,7 +12,7 @@
 				<source :srcset="getStageIcon(item as Stage).webp" type="image/webp" />
 				<img :src="getStageIcon(item as Stage).png" :alt="item.name" loading="lazy" />
 			</picture>
-			<img v-else :src="item.iconPath" :alt="item.name" loading="lazy" />
+			<img v-else :src="item.iconPath" :alt="item.name" loading="lazy" :class="{ 'opponent-character': type === 'characters' && props.isOpponent }" />
 			<span class="icon-overlay-label">{{ item.name }}</span>
 		</div>
 	</div>
@@ -28,6 +28,7 @@ import { ImageFormat } from '@/types/shared/media'
 interface Props {
 	type: 'stages' | 'characters'
 	modelValue?: string
+	isOpponent?: boolean
 }
 
 const props = defineProps<Props>()
@@ -137,5 +138,9 @@ function select(itemName: string) {
 .character-option img {
 	aspect-ratio: 1;
 	object-fit: cover;
+}
+
+.opponent-character {
+	transform: scaleX(-1);
 }
 </style>

@@ -6,7 +6,7 @@
 				<img :src="stageImg.png" class="mx-auto p-1" :alt="stageImg.alt" loading="lazy" />
 			</picture>
 			<img :src="playerImg.src" class="match-body-character mx-auto p-1" :alt="playerImg.alt" />
-			<img :src="opponentImg.src" class="match-body-character mx-auto p-1" :alt="opponentImg.alt" />
+			<img :src="opponentImg.src" class="match-body-character opponent-character mx-auto p-1" :alt="opponentImg.alt" />
 		</div>
 	</div>
 </template>
@@ -75,5 +75,9 @@ img {
 .match-body-character {
 	height: 100px;
 	width: 100px;
+}
+
+.opponent-character {
+	transform: scaleX(-1);
 }
 </style>

@@ -33,6 +33,7 @@
 				v-bind:selected-rival="selectedOpponentRival"
 				v-on:character-selected="updateOpponentRival"
 				:class="{ primarySelector: !filterByPlayer, secondarySelector: filterByPlayer }"
+				:isOpponent="true"
 			/>
 		</div>
 		<div class="results">
