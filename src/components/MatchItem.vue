@@ -5,7 +5,6 @@
 				<div>
 					<div>You</div>
 					<div v-if="isRankedCollection && 'playerElo' in props.match">{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
-					<div v-else>{{ props.match.opponentName }}</div>
 				</div>
 				<div>
 					<div>{{ props.match.opponentName }}</div>
