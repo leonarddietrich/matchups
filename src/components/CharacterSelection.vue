@@ -10,7 +10,7 @@
 			]"
 		>
 			<div class="character-image">
-				<img :src="rival.iconPath" :alt="rival.name" :class="{ 'opponent-character': isOpponent }" />
+				<img :src="rival.iconPath" :alt="rival.name" :class="{ 'opponent-character': isOpponent }" :style="getShadowStyle(rival.name)" />
 			</div>
 		</div>
 	</div>
@@ -35,7 +35,15 @@ export default defineComponent({
 		isOpponent: {
 			type: Boolean,
 			default: false,
-		}
+		},
+		showWinrateShadow: {
+			type: Boolean,
+			default: false,
+		},
+		winrateMap: {
+			type: Object as () => Record<RivalName, number>,
+			default: () => ({} as Record<RivalName, number>),
+		},
 	},
 	emits: ['characterSelected'],
 	methods: {
@@ -45,6 +53,26 @@ export default defineComponent({
 		},
 		isSelectable(rivalName: RivalName) {
 			return this.allowedRivals.includes(rivalName)
+		},
+		interpolateColor(t: number) {
+			// clamp
+			const v = Math.max(0, Math.min(1, t))
+			// from red (#ef4444) to green (#22c55e)
+			const r1 = 239, g1 = 68, b1 = 68
+			const r2 = 34, g2 = 197, b2 = 94
+			const r = Math.round(r1 + (r2 - r1) * v)
+			const g = Math.round(g1 + (g2 - g1) * v)
+			const b = Math.round(b1 + (b2 - b1) * v)
+			return `rgba(${r}, ${g}, ${b}, 0.9)`
+		},
+		getShadowStyle(rivalName: RivalName) {
+			if (!this.showWinrateShadow) return {}
+			const wr = this.winrateMap?.[rivalName]
+			if (wr === undefined || Number.isNaN(wr)) return {}
+			const color = this.interpolateColor(wr)
+			return {
+				filter: `drop-shadow(0 0 2px ${color}) drop-shadow(0 8px 12px ${color})`,
+			}
 		},
 	},
 	data() {

@@ -52,6 +52,8 @@
 				v-bind:allowed-rivals="playerRivals"
 				v-bind:selected-rival="selectedPlayerRival"
 				v-on:character-selected="updatePlayerRival"
+				:winrate-map="playerWinrateMap"
+				:show-winrate-shadow="!filterByPlayer"
 				:class="{ primarySelector: filterByPlayer, secondarySelector: !filterByPlayer }"
 			/>
 
@@ -61,6 +63,8 @@
 				v-bind:allowed-rivals="opponentRivals"
 				v-bind:selected-rival="selectedOpponentRival"
 				v-on:character-selected="updateOpponentRival"
+				:winrate-map="opponentWinrateMap"
+				:show-winrate-shadow="filterByPlayer"
 				:class="{ primarySelector: !filterByPlayer, secondarySelector: filterByPlayer }"
 				:isOpponent="true"
 			/>
@@ -127,7 +131,7 @@ const sourceRounds = computed<Round[]>(() => {
         .flatMap((m: Match | RankedMatch) => m.rounds)
 })
 
-// Filter rounds further by selected player/opponent
+/** Filter rounds further by selected player/opponent */
 const filteredRounds = computed<Round[]>(() => {
 	const p = selectedPlayerRival.value
 	const o = selectedOpponentRival.value
@@ -253,6 +257,46 @@ watch(sourceRounds, (r) => {
 		if (list.length > 0) selectedOpponentRival.value = list[0]
 	}
 }, { immediate: true })
+
+/** For each player rival, compute winrate vs currently selected opponent rival */
+const playerWinrateMap = computed<Record<RivalName, number>>(() => {
+	const map: Record<RivalName, number> = {} as Record<RivalName, number>
+	const o = selectedOpponentRival.value
+	if (!o) return map
+	const rounds = sourceRounds.value.filter(r => r.opponentRival === o)
+	const grouped = new Map<RivalName, { w: number; t: number }>()
+	for (const r of rounds) {
+		const key = r.playerRival
+		const agg = grouped.get(key) || { w: 0, t: 0 }
+		agg.t += 1
+		if (r.won) agg.w += 1
+		grouped.set(key, agg)
+	}
+	for (const [k, v] of grouped.entries()) {
+		map[k] = v.t > 0 ? v.w / v.t : 0
+	}
+	return map
+})
+
+/** For each opponent rival, compute winrate for currently selected player rival */
+const opponentWinrateMap = computed<Record<RivalName, number>>(() => {
+	const map: Record<RivalName, number> = {} as Record<RivalName, number>
+	const p = selectedPlayerRival.value
+	if (!p) return map
+	const rounds = sourceRounds.value.filter(r => r.playerRival === p)
+	const grouped = new Map<RivalName, { w: number; t: number }>()
+	for (const r of rounds) {
+		const key = r.opponentRival
+		const agg = grouped.get(key) || { w: 0, t: 0 }
+		agg.t += 1
+		if (r.won) agg.w += 1
+		grouped.set(key, agg)
+	}
+	for (const [k, v] of grouped.entries()) {
+		map[k] = v.t > 0 ? v.w / v.t : 0
+	}
+	return map
+})
 </script>
 
 <style scoped>
