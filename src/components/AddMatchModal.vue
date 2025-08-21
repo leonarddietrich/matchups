@@ -32,7 +32,7 @@
 					</div>
 
 					<div class="form-group">
-						<label for="opponent-name">Opponent Name *</label>
+						<label for="opponent-name">Opponent Name </label>
 						<input
 							id="opponent-name"
 							type="text"
@@ -40,7 +40,11 @@
 							v-model="opponentName"
 							class="form-input"
 							:class="{ 'error': !opponentName.trim() && hasAttemptedSave }"
+							list="opponent-suggestions"
 						/>
+						<datalist id="opponent-suggestions">
+							<option v-for="name in opponentSuggestions" :key="name" :value="name"></option>
+						</datalist>
 					</div>
 				</div>
 
@@ -61,7 +65,7 @@
 						<div class="round-form-vertical">
 							<!-- Stage Selection -->
 							<div class="form-group">
-								<label>Stage *</label>
+								<label>Stage</label>
 								<div :class="{ 'error': !round.stage && hasAttemptedSave }">
 									<SingleSelection
 										type="stages"
@@ -73,7 +77,7 @@
 							<!-- Character Selection Row -->
 							<div class="character-selection-row">
 								<div class="form-group">
-									<label>Player Character *</label>
+									<label>Player Character</label>
 									<div :class="{ 'error': !round.playerRival && hasAttemptedSave }">
 										<SingleSelection
 											type="characters"
@@ -83,7 +87,7 @@
 								</div>
 
 								<div class="form-group">
-									<label>Opponent Character *</label>
+									<label>Opponent Character</label>
 									<div :class="{ 'error': !round.opponentRival && hasAttemptedSave }">
 										<SingleSelection
 											type="characters"
@@ -96,7 +100,7 @@
 
 							<!-- Result Selection -->
 							<div class="form-group">
-								<label>Round Result *</label>
+								<label>Round Result</label>
 								<div class="result-buttons">
 									<button
 										type="button"
@@ -240,6 +244,27 @@ const maxRoundsAllowed = computed(() => {
 	}
 })
 
+const opponentSuggestions = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return []
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	if (!currentCollection) return []
+
+	return currentCollection.matches
+		.map(match => match.opponentName)
+		.filter((name, index, self) => name && self.indexOf(name) === index)
+		.sort()
+})
+
+const isFormValid = computed(() => {
+	const hasOpponentName = opponentName.value.trim() !== ''
+	const allRoundsValid = rounds.value.every(round =>
+		round.stage && round.playerRival && round.opponentRival && round.won !== undefined
+	)
+	return hasOpponentName && allRoundsValid
+})
+
 function createEmptyRound(): Round {
 	return {
 		stage: '' as StageName,
@@ -268,14 +293,6 @@ function addLink() {
 function removeLink(index: number) {
 	links.value.splice(index, 1)
 }
-
-const isFormValid = computed(() => {
-	const hasOpponentName = opponentName.value.trim() !== ''
-	const allRoundsValid = rounds.value.every(round =>
-		round.stage && round.playerRival && round.opponentRival && round.won !== undefined
-	)
-	return hasOpponentName && allRoundsValid
-})
 
 function saveMatch() {
 	hasAttemptedSave.value = true

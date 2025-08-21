@@ -49,7 +49,11 @@
 								v-model="modifiedMatch.opponentName"
 								class="form-input"
 								:class="{ 'error': !modifiedMatch.opponentName.trim() && hasAttemptedSave }"
+								list="opponent-suggestions"
 							/>
+							<datalist id="opponent-suggestions">
+								<option v-for="name in opponentSuggestions" :key="name" :value="name"></option>
+							</datalist>
 						</div>
 					</div>
 
@@ -362,6 +366,27 @@ const maxRoundsAllowed = computed(() => {
 	}
 })
 
+const opponentSuggestions = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return []
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	if (!currentCollection) return []
+
+	return currentCollection.matches
+		.map(match => match.opponentName)
+		.filter((name, index, self) => name && self.indexOf(name) === index)
+		.sort()
+})
+
+const isFormValid = computed(() => {
+	const hasOpponentName = modifiedMatch.value.opponentName.trim() !== ''
+	const allRoundsValid = modifiedMatch.value.rounds.every(round =>
+		round.stage && round.playerRival && round.opponentRival && round.won !== undefined
+	)
+	return hasOpponentName && allRoundsValid
+})
+
 // Watch for prop changes to initialize the form
 watch(() => props.match, (newMatch) => {
 	if (newMatch) {
@@ -403,14 +428,6 @@ function addLink() {
 function removeLink(index: number) {
 	modifiedMatch.value.links.splice(index, 1)
 }
-
-const isFormValid = computed(() => {
-	const hasOpponentName = modifiedMatch.value.opponentName.trim() !== ''
-	const allRoundsValid = modifiedMatch.value.rounds.every(round =>
-		round.stage && round.playerRival && round.opponentRival && round.won !== undefined
-	)
-	return hasOpponentName && allRoundsValid
-})
 
 function saveMatch() {
 	hasAttemptedSave.value = true
