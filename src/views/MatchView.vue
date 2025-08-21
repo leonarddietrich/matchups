@@ -182,6 +182,7 @@ function closeModifyModal() {
 	border-radius: 5px;
 	cursor: pointer;
 	filter: invert(1);
+	z-index: 1000;
 }
 
 .button-icon {

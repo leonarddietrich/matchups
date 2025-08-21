@@ -22,9 +22,23 @@ import { ROUTES } from "@/constants";
 </script>
 
 <style scoped lang="css">
+.navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 20px;
+	background-color: rgb(36, 21, 59);
+	z-index: 1000;
+}
+
 main {
 	display: block;
-	margin: 20px;
+	padding-top: 60px; /* adjusted for fixed navbar */
 }
 
 img {
