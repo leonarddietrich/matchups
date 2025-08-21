@@ -63,6 +63,7 @@ import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { useRouter } from 'vue-router'
 import type { MatchCollection } from '@/types/roa2Types'
+import { formatDate } from '@/scripts/utils'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
@@ -132,17 +133,6 @@ function getSortClass(column: SortColumn): string {
 function getSortIcon(column: SortColumn): string {
 	if (sortColumn.value !== column) return '↕'
 	return sortDirection.value === 'asc' ? '↑' : '↓'
-}
-
-function formatDate(dateString: string): string {
-	const date = new Date(dateString)
-	return date.toLocaleDateString('de-DE', {
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit'
-	})
 }
 
 function selectCollection(name: string) {

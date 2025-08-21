@@ -51,11 +51,6 @@ const opponentImg = computed(() => {
 	padding: 8px;
 }
 
-img {
-	height: 99px;
-	width: 176px;
-}
-
 .match-body-rounds {
 	flex-wrap: nowrap;
 	justify-content: center;
@@ -71,7 +66,7 @@ img {
 	display: flex;
 	align-items: center;
 	justify-content: space-around;
-	min-height: 120px;
+	height: 90px;
 	overflow: hidden;
 	border: 1px solid transparent;
 }
@@ -107,8 +102,8 @@ img {
 }
 
 .match-body-character {
-	height: 100px;
-	width: 100px;
+	height: 80px;
+	width: 80px;
 	position: relative;
 	z-index: 10;
 	filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));

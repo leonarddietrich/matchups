@@ -86,6 +86,7 @@ import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import type { AnyMatchCollection, MatchFilters as MatchFiltersType, Match } from '@/types/roa2Types'
 import { filterMatches } from '@/scripts/matchFilters'
+import { formatDate } from '@/scripts/utils'
 
 const showAddMatchModal = ref(false)
 const showModifyModal = ref(false)
@@ -130,17 +131,6 @@ function openModifyModal(match: Match) {
 function closeModifyModal() {
 	showModifyModal.value = false
 	selectedMatch.value = null
-}
-
-function formatDate(dateString: string): string {
-	const date = new Date(dateString)
-	return date.toLocaleDateString('de-DE', {
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit'
-	})
 }
 </script>
 

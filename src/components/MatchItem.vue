@@ -1,15 +1,12 @@
 <template>
 	<div class="match">
-		<div>
-			<div class="match-header clickable" @click="openModifyModal">
-				<div>
-					<div>You</div>
-					<div v-if="isRankedCollection && 'playerElo' in props.match">{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
-				</div>
-				<div>
-					<div>{{ props.match.opponentName }}</div>
-					<div v-if="isRankedCollection && 'opponentElo' in props.match">{{ props.match.opponentElo === -1 ? 'Unranked' : props.match.opponentElo }}</div>
-				</div>
+		<div @click="openModifyModal">
+			<div class="match-header">{{ formatDate(props.match.createdAt) }}</div>
+			<div class="match-header">{{ props.match.opponentName }}</div>
+			<div v-if="isRankedCollection && 'playerElo' in props.match && 'opponentElo' in props.match" class="match-header clickable">
+					<div>{{ props.match.playerElo === -1 ? 'Unranked' : props.match.playerElo }}</div>
+					<div>vs</div>
+					<div>{{ props.match.opponentElo === -1 ? 'Unranked' : props.match.opponentElo }}</div>
 			</div>
 		</div>
 		<div class="match-body clickable" @click="openModifyModal">
@@ -54,6 +51,7 @@ import { computed } from 'vue'
 import { filterRoundsInMatch } from '@/scripts/matchFilters'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+import { formatDate } from '@/scripts/utils'
 
 const emit = defineEmits(['openModifyModal'])
 const matchStore = useMatchStore()
@@ -86,7 +84,7 @@ const displayedRounds = computed(() => {
 
 <style scoped lang="css">
 .match {
-	width: 400px;
+	width: 250px;
 	box-sizing: border-box;
 	justify-content: space-evenly;
 }
@@ -96,7 +94,7 @@ const displayedRounds = computed(() => {
 	align-items: center;
 	background-color: rgba(0, 0, 0, 0.5);
 	text-align: center;
-	max-width: 400px;
+	/* max-width: 400px; */
 }
 
 .clickable {
@@ -110,15 +108,15 @@ const displayedRounds = computed(() => {
 
 /* Links Section Styling */
 .match-links {
-	margin-top: 1rem;
-	padding: 0.75rem;
+	/* margin-top: 1rem; */
+	padding: 0.4rem;
 	background-color: rgba(255, 255, 255, 0.05);
 	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-radius: 6px;
+	/* border-radius: 6px; */
 }
 
 .links-title {
-	margin: 0 0 0.75rem 0;
+	/* margin: 0 0 0.75rem 0; */
 	font-size: 1rem;
 	color: #42b983;
 	font-weight: 600;
@@ -138,18 +136,18 @@ const displayedRounds = computed(() => {
 }
 
 .link-description {
-	padding: 0.5rem 0.75rem 0.5rem 0;
+	/* padding: 0.5rem 0.75rem 0.5rem 0; */
 	vertical-align: top;
 	width: 35%;
-	font-weight: 500;
+	/* font-weight//: 500; */
 	color: #e2e8f0;
 }
 
-.link-url {
-	padding: 0.5rem 0;
-	vertical-align: top;
-	width: 65%;
-}
+/* .link-url { */
+	/* padding: 0.5rem 0; */
+	/* vertical-align: top; */
+	/* width: 65%; */
+/* } */
 
 .link-anchor {
 	color: #42b983;

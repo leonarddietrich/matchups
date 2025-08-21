@@ -73,7 +73,7 @@
 
 				<!-- Validation Errors -->
 				<div v-if="validationErrors.length > 0" class="validation-errors">
-					<h4>❌ Validation Errors</h4>
+					<h4>Validation Errors</h4>
 					<ul class="error-list">
 						<li v-for="error in validationErrors" :key="error" class="error-item">
 							{{ error }}
@@ -277,7 +277,7 @@ function validateJsonData(data: unknown) {
 
 			const matchObj = match as Record<string, unknown>
 
-			if (!matchObj.id && matchObj.id !== 0) {
+			if (!matchObj.uuid && matchObj.uuid !== 0) {
 				validationErrors.value.push(`Match ${index + 1}: Missing id`)
 			}
 			if (!matchObj.opponentName || typeof matchObj.opponentName !== 'string') {
