@@ -44,20 +44,6 @@
 		/>
 	</div>
 
-	<!-- Add match ID display for each match -->
-	<div v-if="matchCollection" class="match-ids">
-		<h3>Match IDs Debug Info:</h3>
-		<div v-for="match in matchCollection.matches" :key="match.uuid" class="match-id-item">
-			<strong>Match ID:</strong> {{ match.uuid }} | <strong>Opponent:</strong> {{ match.opponentName }} |
-			<strong>Rounds:</strong> {{ match.rounds.length }}
-		</div>
-		<div class="debug-info">
-			<p><strong>Total Matches:</strong> {{ matchCollection.matches.length }}</p>
-			<p><strong>Collection Type:</strong> {{ matchCollection.type }}</p>
-			<p><strong>Collection Name:</strong> {{ matchCollection.name }}</p>
-		</div>
-	</div>
-
 	<AddMatchModal :display="showAddMatchModal" @closeAddMatchModal="showAddMatchModal = false">
 	</AddMatchModal>
 	<ModifyMatchModal
