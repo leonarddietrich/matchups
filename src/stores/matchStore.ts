@@ -28,6 +28,12 @@ export const useMatchStore = defineStore('matchStore', {
 				return matchCollection || null
 			}
 		},
+		/** Returns all match collections.
+		 * 	@returns Array of match collections.
+		 */
+		getAllMatchCollections: (state) => {
+			return state.matchCollections
+		}
 	},
 	actions: {
 		/**

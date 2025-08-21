@@ -63,6 +63,15 @@ export interface Stage {
 }
 
 /**
+ * Aggregated performance for a specific stage within a matchup (player vs opponent).
+ */
+export interface StagePerformance extends Stage {
+	timesPlayed: number
+	wins: number
+	percentage: number | undefined
+}
+
+/**
  * Represents a round in a match in Rivals of Aether 2.
  *
  * @property {StageName} stage - The stage where the round was played.

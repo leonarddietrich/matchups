@@ -2,6 +2,35 @@
 	<div>
 		<h1>Matchup Insight</h1>
 
+		<!-- Rounds Source Selector -->
+		<div class="rounds-source">
+			<label>
+				<span>Source:</span>
+				<select v-model="roundsSourceMode">
+					<option value="current">Current collection</option>
+					<option value="all">All collections</option>
+					<option value="byType">By type</option>
+					<option value="byPlayer">By opponent name</option>
+				</select>
+			</label>
+			<label v-if="roundsSourceMode === 'byType'" class="inline-control">
+				<span>Type:</span>
+				<select v-model="selectedType">
+					<option value="ranked">ranked</option>
+					<option value="casual">casual</option>
+					<option value="friendly">friendly</option>
+					<option value="tournament">tournament</option>
+				</select>
+			</label>
+			<label v-if="roundsSourceMode === 'byPlayer'" class="inline-control">
+				<span>Opponent:</span>
+				<input v-model.trim="selectedOpponentName" type="text" placeholder="Enter opponent name" list="opponent-names" />
+				<datalist id="opponent-names">
+					<option v-for="name in opponentNameOptions" :key="name" :value="name"></option>
+				</datalist>
+			</label>
+		</div>
+
 		<!-- Improved Filter Toggle -->
 		<div class="filter-mode-toggle">
 			<span class="toggle-label">Filter by:</span>
@@ -18,7 +47,7 @@
 			</div>
 		</div>
 
-		<div class="selectors">
+	<div class="selectors">
 			<CharacterSelection
 				v-bind:allowed-rivals="playerRivals"
 				v-bind:selected-rival="selectedPlayerRival"
@@ -37,7 +66,12 @@
 			/>
 		</div>
 		<div class="results">
-			<StageInsight :player="selectedPlayerRival" :opponent="selectedOpponentRival"></StageInsight>
+			<div class="stat-field accent" role="status" aria-live="polite">
+				<span class="stat-label">Total Win Rate:</span>
+				<span class="stat-value">{{ Math.round(totalWinRate ?? 0) }}%</span>
+				<span class="stat-sub">( {{ totalRoundsPlayed ?? 0 }} / {{ totalRoundsWon ?? 0 }} )</span>
+			</div>
+			<StageInsight :stage-performance="stagePerformances"></StageInsight>
 		</div>
 	</div>
 </template>
@@ -48,58 +82,111 @@ import StageInsight from '@/components/StageInsight.vue'
 import { computed, ref, watch } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import { type RivalName } from '@/types/roa2Types'
+import type { RivalName, Round, MatchType, Match, RankedMatch, StagePerformance } from '@/types/roa2Types'
+import { STAGES } from '@/constants'
 
 const filterByPlayer = ref(true)
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
 
-const selectableRivals = computed(() => {
-	const selectableRivals: {
-		player: Record<RivalName, Set<RivalName>>,
-		opponent: Record<RivalName, Set<RivalName>>
-	} = {
-		player: {} as Record<RivalName, Set<RivalName>>,
-		opponent: {} as Record<RivalName, Set<RivalName>>
-	}
+type RoundsSourceMode = 'current' | 'all' | 'byType' | 'byPlayer'
+const roundsSourceMode = ref<RoundsSourceMode>('current')
+const selectedType = ref<MatchType>('ranked')
+const selectedOpponentName = ref<string>('')
 
-	const selectedName = selectionStore.getSelectedMatchCollectionName
-	if (selectedName === null) {
-		return selectableRivals
-	}
+const allCollections = computed(() => matchStore.getAllMatchCollections)
+const selectedCollection = computed(() => {
+    const name = selectionStore.getSelectedMatchCollectionName
+    return name ? matchStore.getMatchCollectionByName(name) : null
+})
 
-	const selectedMatchCollection = matchStore.getMatchCollectionByName(selectedName)
-	if (!selectedMatchCollection) {
-		return selectableRivals
-	}
+const sourceRounds = computed<Round[]>(() => {
+    const mode = roundsSourceMode.value
+    if (mode === 'current') {
+        const col = selectedCollection.value
+        if (!col) return []
+        return col.matches.flatMap((m: Match | RankedMatch) => m.rounds)
+    }
+    if (mode === 'all') {
+        return allCollections.value.flatMap(c => c.matches).flatMap((m: Match | RankedMatch) => m.rounds)
+    }
+    if (mode === 'byType') {
+        return allCollections.value
+            .filter(c => c.type === selectedType.value)
+            .flatMap(c => c.matches)
+            .flatMap((m: Match | RankedMatch) => m.rounds)
+    }
+    // byPlayer (opponent name)
+	const queryRaw = selectedOpponentName.value.trim()
+	if (!queryRaw) return []
+	const query = queryRaw.toLowerCase()
+    return allCollections.value
+        .flatMap(c => c.matches)
+		.filter((m: Match | RankedMatch) => m.opponentName.trim().toLowerCase() === query)
+        .flatMap((m: Match | RankedMatch) => m.rounds)
+})
 
-	const rounds = selectedMatchCollection.matches.flatMap((match) => match.rounds)
-	if (rounds && rounds.length > 0) {
-		rounds.forEach( round => {
-			const playerRival = round.playerRival
-			const opponentRival = round.opponentRival
-			if(!selectableRivals.player[playerRival]){
-				const rivalSet = new Set<RivalName>()
-				rivalSet.add(opponentRival)
-				selectableRivals.player[playerRival] = rivalSet
-			} else {
-				selectableRivals.player[playerRival].add(opponentRival)
+// Filter rounds further by selected player/opponent
+const filteredRounds = computed<Round[]>(() => {
+	const p = selectedPlayerRival.value
+	const o = selectedOpponentRival.value
+	if (!p || !o) return []
+	return sourceRounds.value.filter(r => r.playerRival === p && r.opponentRival === o)
+})
+
+const stagePerformances = computed<StagePerformance[]>(() => {
+	const rounds = filteredRounds.value
+	return STAGES.map((stage): StagePerformance => {
+		let timesPlayed = 0
+		let wins = 0
+		for (const r of rounds) {
+			if (r.stage === stage.name) {
+				timesPlayed++
+				if (r.won) wins++
 			}
-			if(!selectableRivals.opponent[opponentRival]){
-				const rivalSet = new Set<RivalName>()
-				rivalSet.add(playerRival)
-				selectableRivals.opponent[opponentRival] = rivalSet
-			} else {
-				selectableRivals.opponent[opponentRival].add(playerRival)
+		}
+		const percentage = timesPlayed > 0 ? (wins / timesPlayed) * 100 : undefined
+		return { ...stage, timesPlayed, wins, percentage }
+	})
+})
+
+const totalRoundsPlayed = computed(() => stagePerformances.value.reduce((acc, s) => acc + s.timesPlayed, 0))
+const totalRoundsWon = computed(() => stagePerformances.value.reduce((acc, s) => acc + s.wins, 0))
+const totalWinRate = computed(() => totalRoundsPlayed.value > 0 ? (totalRoundsWon.value / totalRoundsPlayed.value) * 100 : 0)
+
+const opponentNameOptions = computed<string[]>(() => {
+	const names = new Set<string>()
+	allCollections.value.forEach(c => {
+		c.matches.forEach((m: Match | RankedMatch) => {
+			if (m.opponentName && typeof m.opponentName === 'string') {
+				names.add(m.opponentName.trim())
 			}
 		})
-	}
-	return selectableRivals
+	})
+	return Array.from(names).sort((a, b) => a.localeCompare(b))
+})
+
+const selectableRivals = computed(() => {
+	const result: {
+		player: Record<RivalName, Set<RivalName>>,
+		opponent: Record<RivalName, Set<RivalName>>
+	} = { player: {} as Record<RivalName, Set<RivalName>>, opponent: {} as Record<RivalName, Set<RivalName>> }
+
+	const r = sourceRounds.value
+	r.forEach(round => {
+		const p = round.playerRival
+		const o = round.opponentRival
+		if (!result.player[p]) result.player[p] = new Set<RivalName>()
+		if (!result.opponent[o]) result.opponent[o] = new Set<RivalName>()
+		result.player[p].add(o)
+		result.opponent[o].add(p)
+	})
+	return result
 })
 
 const playerRivals = computed<RivalName[]>(() => {
-	if(filterByPlayer.value){
+	if (filterByPlayer.value) {
 		return Object.keys(selectableRivals.value.player) as RivalName[]
 	} else {
 		return selectedOpponentRival.value && selectableRivals.value.opponent[selectedOpponentRival.value]
@@ -109,8 +196,8 @@ const playerRivals = computed<RivalName[]>(() => {
 })
 
 const opponentRivals = computed<RivalName[]>(() => {
-	if(!filterByPlayer.value){
-		return Object.keys(selectableRivals.value.opponent)  as RivalName[]
+	if (!filterByPlayer.value) {
+		return Object.keys(selectableRivals.value.opponent) as RivalName[]
 	} else {
 		return selectedPlayerRival.value && selectableRivals.value.player[selectedPlayerRival.value]
 			? Array.from(selectableRivals.value.player[selectedPlayerRival.value].values())
@@ -131,17 +218,19 @@ const selectedOpponentRival = computed<RivalName | null>({
 })
 
 watch(playerRivals, (newPlayerRivals) => {
-    if (selectedPlayerRival.value && !newPlayerRivals.includes(selectedPlayerRival.value)) {
-        // Current selection is not in the new list, select first available or null
-        selectedPlayerRival.value = newPlayerRivals.length > 0 ? newPlayerRivals[0] : null
-    }
+	const current = selectedPlayerRival.value
+	if (!current || !newPlayerRivals.includes(current)) {
+		// Ensure a valid selection when list changes
+		selectedPlayerRival.value = newPlayerRivals.length > 0 ? newPlayerRivals[0] : null
+	}
 }, { immediate: true })
 
 watch(opponentRivals, (newOpponentRivals) => {
-    if (selectedOpponentRival.value && !newOpponentRivals.includes(selectedOpponentRival.value)) {
-        // Current selection is not in the new list, select first available or null
-        selectedOpponentRival.value = newOpponentRivals.length > 0 ? newOpponentRivals[0] : null
-    }
+	const current = selectedOpponentRival.value
+	if (!current || !newOpponentRivals.includes(current)) {
+		// Ensure a valid selection when list changes
+		selectedOpponentRival.value = newOpponentRivals.length > 0 ? newOpponentRivals[0] : null
+	}
 }, { immediate: true })
 
 function updatePlayerRival(newSelectedRival: RivalName | null) {
@@ -150,9 +239,34 @@ function updatePlayerRival(newSelectedRival: RivalName | null) {
 function updateOpponentRival(newSelectedRival: RivalName | null) {
 	selectedOpponentRival.value = newSelectedRival
 }
+
+// Ensure a player and opponent are always selected when there are rounds
+watch(sourceRounds, (r) => {
+	if (!r || r.length === 0) return
+	// Nudge watchers by resetting to null if invalid, then rely on watchers to pick defaults
+	if (!selectedPlayerRival.value) {
+		const list = playerRivals.value
+		if (list.length > 0) selectedPlayerRival.value = list[0]
+	}
+	if (!selectedOpponentRival.value) {
+		const list = opponentRivals.value
+		if (list.length > 0) selectedOpponentRival.value = list[0]
+	}
+}, { immediate: true })
 </script>
 
 <style scoped>
+.rounds-source {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: center;
+}
+.inline-control {
+	display: inline-flex;
+	gap: 0.5rem;
+	align-items: center;
+}
 .filter-mode-toggle {
 	display: flex;
 	align-items: center;
@@ -264,5 +378,41 @@ function updateOpponentRival(newSelectedRival: RivalName | null) {
 
 .results {
 	margin-top: 2rem;
+}
+
+.stat-field {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	width: fit-content;
+	margin: 0 auto 16px;
+}
+
+.stat-field .stat-label {
+	color: #a0aec0;
+	font-size: 0.95rem;
+	line-height: 1;
+}
+
+.stat-field .stat-value {
+	color: #e2e8f0;
+	font-weight: 800;
+	font-size: 1.25rem;
+	line-height: 1;
+}
+
+.stat-field .stat-sub {
+	color: #94a3b8;
+	font-size: 0.95rem;
+	line-height: 1;
+}
+
+.stat-field.accent {
+	border-color: rgba(0, 189, 126, 0.6);
+	box-shadow: 0 0 0 1px rgba(0, 189, 126, 0.15) inset;
 }
 </style>

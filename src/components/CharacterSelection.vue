@@ -35,7 +35,7 @@ export default defineComponent({
 		isOpponent: {
 			type: Boolean,
 			default: false,
-		},
+		}
 	},
 	emits: ['characterSelected'],
 	methods: {
