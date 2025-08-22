@@ -86,7 +86,7 @@ const opponentImg = computed(() => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: #00bd7e30;
+	background: linear-gradient(90deg, #00bd7ecc 0%, #00bd7e4d 20%, #fcfcfc00 100%);
 	z-index: 1;
 }
 
@@ -97,7 +97,7 @@ const opponentImg = computed(() => {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: #e53e3e30;
+	background: linear-gradient(90deg,#00000000 0%, #e53e3e4d 80%, #e53e3ecc 100%);
 	z-index: 1;
 }
 
