@@ -1977,5 +1977,6 @@ export const EXAMPLE_MATCH_COLLECTION: RankedMatchCollection = {
     }
   ],
   "uuid": "d535bd58-1b84-4bc6-8a4d-83a9812d95ba",
-  "version": 1
+  "version": 2,
+  "readOnly": false
 }

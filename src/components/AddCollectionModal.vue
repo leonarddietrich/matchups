@@ -124,6 +124,7 @@ function createCollection() {
 		name: collectionName.value.trim(),
 		type: collectionType.value,
 		description: collectionDescription.value.trim(),
+		readOnly: false,
 		matches: []
 	}
 

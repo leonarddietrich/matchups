@@ -82,15 +82,27 @@ export function getStageIconPathByName(stageName: StageName, format: ImageFormat
 
 export function transformMatchCollectionWithOutdatedVersion(collection: AnyMatchCollection) {
 	const oldVersion = collection.hasOwnProperty('version') ? (collection as { version: number }).version : 0
-		if (oldVersion < 1.0) {
-			console.info(`Transforming match collection '${collection.name}' from version ${oldVersion} to ${CURRENT_MATCH_DATA_VERSION}`)
-			console.info('Original collection:', {...collection})
-			delete ((collection as unknown) as Record<string, unknown>).id
-			collection.uuid = collection.uuid || crypto.randomUUID()
-			collection.version = CURRENT_MATCH_DATA_VERSION
-			transformMatchesToVersion1(collection.matches, collection.type === 'ranked')
-			console.info('Transformed collection:', collection)
-		}
+	if (oldVersion < 1) {
+		console.info(`Transforming match collection '${collection.name}' from version ${oldVersion} to 1`)
+		console.info('Original collection:', {...collection})
+		delete ((collection as unknown) as Record<string, unknown>).id
+		collection.uuid = collection.uuid || crypto.randomUUID()
+		collection.version = 1
+		transformMatchesToVersion1(collection.matches, collection.type === 'ranked')
+		console.info('Transformed collection:', collection)
+	}
+	if (oldVersion < 2) {
+		console.info(`Transforming match collection '${collection.name}' from version ${oldVersion} to 2`)
+		transformMatchesFromVersion1ToVersion2(collection)
+	}
+}
+
+function transformMatchesFromVersion1ToVersion2(collection: AnyMatchCollection) {
+	if (!collection.hasOwnProperty('readOnly')) {
+		(collection as unknown as Record<string, unknown>).readOnly = false
+	}
+	collection.version = CURRENT_MATCH_DATA_VERSION
+	console.info(`Successfully migrated collection '${collection.name}' to version 2. readOnly: ${(collection as unknown as Record<string, unknown>).readOnly}`)
 }
 
 function transformMatchesToVersion1(matches: (Match | RankedMatch)[], isRanked: boolean) {

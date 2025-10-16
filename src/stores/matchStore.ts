@@ -141,6 +141,10 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
+			if (collection.readOnly) {
+				console.warn(`Match collection '${collectionName}' is read-only and cannot be modified.`)
+				return
+			}
 			const matchIndex = collection.matches.findIndex((match) => match.uuid === matchId)
 			if (matchIndex === -1) {
 				console.warn(`Match with id ${matchId} does not exist in collection ${collectionName}.`)
@@ -161,6 +165,10 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection with name ${collectionName} does not exist.`)
 				return
 			}
+			if (collection.readOnly) {
+				console.warn(`Match collection '${collectionName}' is read-only and cannot be modified.`)
+				return
+			}
 			const matchIndex = collection.matches.findIndex((m: Match | RankedMatch) => m.uuid === match.uuid)
 			if (matchIndex === -1) {
 				console.warn(`Match with id ${match.uuid} does not exist in collection ${collectionName}.`)
@@ -179,6 +187,10 @@ export const useMatchStore = defineStore('matchStore', {
 			const collection = this.getMatchCollectionByName(collectionName)
 			if (!collection) {
 				console.warn(`Match collection with name ${collectionName} does not exist.`)
+				return
+			}
+			if (collection.readOnly) {
+				console.warn(`Match collection '${collectionName}' is read-only and cannot be modified.`)
 				return
 			}
 			if (collection.matches.some((m: Match | RankedMatch) => m.uuid === match.uuid)) {

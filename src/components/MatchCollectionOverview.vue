@@ -16,6 +16,7 @@
 							<span class="sort-icon">{{ getSortIcon('type') }}</span>
 						</th>
 						<th>Description</th>
+						<th>Read Only</th>
 						<th @click="setSortColumn('createdAt')" class="sortable-header" :class="getSortClass('createdAt')">
 							Created
 							<span class="sort-icon">{{ getSortIcon('createdAt') }}</span>
@@ -29,7 +30,7 @@
 				</thead>
 				<tbody>
 					<tr v-if="matchCollections.length === 0">
-						<td colspan="7" class="no-data">No match collections available</td>
+						<td colspan="8" class="no-data">No match collections available</td>
 					</tr>
 					<tr v-for="collection in matchCollections" :key="collection.name" class="collection-row">
 						<td class="name-cell" :title="collection.name">{{ collection.name }}</td>
@@ -37,6 +38,15 @@
 							<span class="type-badge" :class="collection.type">{{ collection.type }}</span>
 						</td>
 						<td class="description-cell" :title="collection.description || 'No description'">{{ collection.description || 'No description' }}</td>
+						<td class="readonly-cell">
+							<button
+								@click="toggleReadOnly(collection)"
+								class="action-btn toggle-btn"
+								:class="{ 'readonly-active': collection.readOnly }"
+							>
+								{{ collection.readOnly ? 'Yes' : 'No' }}
+							</button>
+						</td>
 						<td class="date-cell">{{ formatDate(collection.createdAt) }}</td>
 						<td class="date-cell">{{ formatDate(collection.updatedAt) }}</td>
 						<td class="actions-cell">
@@ -166,6 +176,12 @@ function downloadCollection(collection: MatchCollection) {
 	link.click()
 	document.body.removeChild(link)
 	URL.revokeObjectURL(url)
+}
+
+function toggleReadOnly(collection: MatchCollection) {
+	collection.readOnly = !collection.readOnly
+	matchStore.updateMatchCollection(collection)
+	console.log(`Collection '${collection.name}' read-only status toggled to: ${collection.readOnly}`)
 }
 </script>
 
@@ -304,6 +320,10 @@ function downloadCollection(collection: MatchCollection) {
 	white-space: nowrap;
 }
 
+.readonly-cell {
+	text-align: center;
+}
+
 .actions-cell {
 	display: flex;
 	gap: 0.5rem;
@@ -353,6 +373,26 @@ function downloadCollection(collection: MatchCollection) {
 
 .delete-btn:hover {
 	background-color: #e55a5a;
+}
+
+.toggle-btn {
+	background-color: #95a5a6;
+	color: white;
+	padding: 0.375rem 0.75rem;
+	font-size: 0.75rem;
+}
+
+.toggle-btn:hover {
+	background-color: #7f8c8d;
+}
+
+.toggle-btn.readonly-active {
+	background-color: #e74c3c;
+	color: white;
+}
+
+.toggle-btn.readonly-active:hover {
+	background-color: #c0392b;
 }
 
 .no-data {

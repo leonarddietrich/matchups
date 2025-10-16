@@ -120,11 +120,14 @@ export interface RankedMatch extends Match {
 /**
  * Represents a collection of matches in Rivals of Aether 2.
  *
+ * @property {number} version - The version of the match collection schema.
+ * @property {string} uuid - Unique identifier for the collection.
  * @property {string} createdAt - ISO date string for when the collection was created.
  * @property {string} updatedAt - ISO date string for when the collection was last updated.
  * @property {string} name - The name of the match collection.
  * @property {MatchType} type - The type of matches in the collection (e.g., ranked, casual).
  * @property {string} description - A description of the match collection.
+ * @property {boolean} readOnly - Indicates whether the collection is read-only (no modifications allowed).
  * @property {Match[]} matches - An array of matches in the collection.
  */
 export interface MatchCollection {
@@ -135,6 +138,7 @@ export interface MatchCollection {
 	name: string
 	type: MatchType
 	description: string
+	readOnly: boolean
 	matches: Match[]
 }
 

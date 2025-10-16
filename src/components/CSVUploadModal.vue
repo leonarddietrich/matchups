@@ -475,6 +475,7 @@ function buildCollection(): MatchCollection | void {
 		name: matchCollectionName.value,
 		type: matchCollectionType.value,
 		description: matchCollectionDescription.value,
+		readOnly: false,
 		matches: matches,
 	}
 

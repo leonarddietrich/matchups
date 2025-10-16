@@ -71,8 +71,19 @@ const isRankedCollection = computed(() => {
 	return currentCollection?.type === 'ranked'
 })
 
+// Check if current collection is read-only
+const isReadOnly = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	return currentCollection?.readOnly ?? false
+})
+
 function openModifyModal() {
-	emit('openModifyModal', props.match)
+	if (!isReadOnly.value) {
+		emit('openModifyModal', props.match)
+	}
 }
 const displayedRounds = computed(() => {
 	if (!props.filters) {

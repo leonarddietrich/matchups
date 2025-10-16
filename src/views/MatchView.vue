@@ -1,7 +1,7 @@
 <template>
 	<!-- Match Collection Details -->
-	<div class="collection-details" v-if="matchCollection">
-		<h2>{{ matchCollection.name }}</h2>
+	<div class="collection-details" v-if="matchCollection" :class="{ 'readonly': matchCollection.readOnly }">
+		<h2>{{ matchCollection.readOnly ? 'read-only: ' : '' }}{{ matchCollection.name }}</h2>
 		<div class="details-grid">
 			<div class="detail-item">
 				<span class="detail-label">Type:</span>
@@ -55,10 +55,14 @@
 	<button
 		v-if="!(showAddMatchModal || showModifyModal)"
 		class="open-modal"
+		:disabled="matchCollection?.readOnly"
+		:class="{ 'readonly': matchCollection?.readOnly }"
+		:title="matchCollection?.readOnly ? 'This collection is read-only' : 'Add Match'"
 		@click="showAddMatchModal = true"
 		style="bottom: 10px; right: 10px"
 	>
-		<img class="button-icon" src="/src/assets/site/plus.svg" alt="Add Match" />
+		<img v-if="!matchCollection?.readOnly" class="button-icon" src="/src/assets/site/plus.svg" alt="Add Match" />
+		<span v-else class="lock-icon">🔒</span>
 	</button>
 </template>
 
@@ -129,10 +133,18 @@ function closeModifyModal() {
 	border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.collection-details.readonly {
+	color: #ff9999;
+}
+
 .collection-details h2 {
 	margin: 0 0 1rem 0;
 	color: white;
 	font-size: 1.5rem;
+}
+
+.collection-details.readonly h2 {
+	color: #ff9999;
 }
 
 .details-grid {
@@ -153,9 +165,17 @@ function closeModifyModal() {
 	font-size: 0.875rem;
 }
 
+.collection-details.readonly .detail-label {
+	color: #ffcccc;
+}
+
 .detail-value {
 	color: white;
 	font-size: 1rem;
+}
+
+.collection-details.readonly .detail-value {
+	color: #ff9999;
 }
 
 .match-display {
@@ -183,6 +203,21 @@ function closeModifyModal() {
 	cursor: pointer;
 	filter: invert(1);
 	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.open-modal:disabled,
+.open-modal.readonly {
+	background-color: #95a5a6;
+	filter: invert(0);
+	cursor: not-allowed;
+}
+
+.lock-icon {
+	font-size: 24px;
+	line-height: 1;
 }
 
 .button-icon {
