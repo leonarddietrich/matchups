@@ -157,13 +157,6 @@ watch(() => props.display, (newDisplay) => {
 </script>
 
 <style scoped lang="css">
-.form-container {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	max-width: 500px;
-}
-
 .form-info {
 	background-color: rgba(66, 185, 131, 0.1);
 	border: 1px solid rgba(66, 185, 131, 0.3);

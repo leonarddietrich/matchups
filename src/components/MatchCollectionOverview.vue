@@ -53,6 +53,9 @@
 							<button @click="selectCollection(collection.name)" class="action-btn select-btn">
 								Select
 							</button>
+							<button @click="openEditModal(collection)" class="action-btn edit-btn">
+								Edit
+							</button>
 							<button @click="downloadCollection(collection)" class="action-btn download-btn">
 								Save JSON
 							</button>
@@ -65,6 +68,13 @@
 			</table>
 		</div>
 	</div>
+	<EditCollectionModal
+		:display="isEditModalVisible"
+		:collection="collectionBeingEdited"
+		:existing-names="existingCollectionNames"
+		@close="closeEditModal"
+		@save="handleEditSave"
+	/>
 </template>
 
 <script lang="ts" setup>
@@ -72,8 +82,9 @@ import { computed, ref } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { useRouter } from 'vue-router'
-import type { MatchCollection } from '@/types/roa2Types'
+import type { AnyMatchCollection } from '@/types/roa2Types'
 import { formatDate } from '@/scripts/utils'
+import EditCollectionModal from './EditCollectionModal.vue'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
@@ -85,6 +96,12 @@ type SortDirection = 'asc' | 'desc'
 
 const sortColumn = ref<SortColumn>('name')
 const sortDirection = ref<SortDirection>('asc')
+
+// Edit modal state
+const isEditModalVisible = ref(false)
+const collectionBeingEdited = ref<AnyMatchCollection | null>(null)
+
+const existingCollectionNames = computed(() => matchStore.matchCollections.map(collection => collection.name))
 
 // Sorted match collections
 const matchCollections = computed(() => {
@@ -150,6 +167,58 @@ function selectCollection(name: string) {
 	router.push('/matches')
 }
 
+function openEditModal(collection: AnyMatchCollection) {
+	if (collection.readOnly) {
+		alert('This collection is read-only and cannot be edited.')
+		return
+	}
+
+	collectionBeingEdited.value = collection
+	isEditModalVisible.value = true
+}
+
+function closeEditModal() {
+	isEditModalVisible.value = false
+	collectionBeingEdited.value = null
+}
+
+function handleEditSave(payload: { name: string; description: string }) {
+	if (!collectionBeingEdited.value) {
+		return
+	}
+
+	const targetCollection = collectionBeingEdited.value
+	const oldName = targetCollection.name
+	const newName = payload.name.trim()
+	const newDescription = payload.description.trim()
+
+	if (!newName) {
+		alert('Collection name cannot be empty.')
+		return
+	}
+
+	const nameExists = matchStore.getMatchCollectionNameList
+		.filter(name => name !== oldName)
+		.some(name => name.toLowerCase() === newName.toLowerCase())
+
+	if (nameExists) {
+		alert('A collection with this name already exists.')
+		return
+	}
+
+	targetCollection.name = newName
+	targetCollection.description = newDescription
+	targetCollection.updatedAt = new Date().toISOString()
+
+	matchStore.updateMatchCollection(targetCollection)
+
+	if (selectionStore.getSelectedMatchCollectionName === oldName) {
+		selectionStore.setMatchCollectionName(newName)
+	}
+
+	closeEditModal()
+}
+
 function deleteCollection(name: string) {
 	if (confirm('Are you sure you want to delete this match collection? This action cannot be undone.')) {
 		console.log(`Attempting to delete collection: "${name}"`)
@@ -164,7 +233,7 @@ function deleteCollection(name: string) {
 	}
 }
 
-function downloadCollection(collection: MatchCollection) {
+function downloadCollection(collection: AnyMatchCollection) {
 	const jsonData = JSON.stringify(collection, null, 2)
 	const blob = new Blob([jsonData], { type: 'application/json' })
 	const url = URL.createObjectURL(blob)
@@ -178,7 +247,7 @@ function downloadCollection(collection: MatchCollection) {
 	URL.revokeObjectURL(url)
 }
 
-function toggleReadOnly(collection: MatchCollection) {
+function toggleReadOnly(collection: AnyMatchCollection) {
 	collection.readOnly = !collection.readOnly
 	matchStore.updateMatchCollection(collection)
 	console.log(`Collection '${collection.name}' read-only status toggled to: ${collection.readOnly}`)
@@ -329,10 +398,11 @@ function toggleReadOnly(collection: MatchCollection) {
 	gap: 0.5rem;
 	align-items: center;
 	justify-content: flex-start;
-	min-width: 140px;
+	min-width: 200px;
 	height: 100%;
 	padding-top: 0.75rem;
 	padding-bottom: 0.75rem;
+	flex-wrap: wrap;
 }
 
 .action-btn {
@@ -355,6 +425,15 @@ function toggleReadOnly(collection: MatchCollection) {
 
 .select-btn:hover {
 	background-color: #369870;
+}
+
+.edit-btn {
+	background-color: #3498db;
+	color: white;
+}
+
+.edit-btn:hover {
+	background-color: #2980b9;
 }
 
 .download-btn {

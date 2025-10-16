@@ -95,63 +95,70 @@ export default defineComponent({
 }
 
 /* Global modal styles that all modals inherit */
-.modal-container .form-group {
-	margin-bottom: 1rem;
+:deep(.form-container) {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	width: 100%;
 }
 
-.modal-container .form-group label {
-	display: block;
-	margin-bottom: 0.5rem;
-	font-weight: 500;
+:deep(.form-group) {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+:deep(.form-group label) {
+	font-weight: 600;
 	color: #e2e8f0;
-	font-size: 0.9rem;
+	font-size: 0.95rem;
 }
 
-.modal-container .form-input {
+:deep(.form-input) {
 	width: 100%;
 	padding: 0.75rem;
-	border: 1px solid rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.25);
 	border-radius: 6px;
-	font-size: 0.9rem;
+	font-size: 0.95rem;
 	box-sizing: border-box;
-	background-color: rgba(255, 255, 255, 0.1);
-	color: #e2e8f0;
+	background-color: rgba(255, 255, 255, 0.08);
+	color: #f8fafc;
 	transition: all 0.2s ease;
 }
 
-.modal-container .form-input:focus {
+:deep(.form-input:focus) {
 	outline: none;
 	border-color: #42b983;
 	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-	background-color: rgba(255, 255, 255, 0.15);
+	background-color: rgba(255, 255, 255, 0.12);
 }
 
-.modal-container .form-input.error {
+:deep(.form-input.error) {
 	border-color: #e74c3c;
 	box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
 }
 
-.modal-container .form-input::placeholder {
+:deep(.form-input::placeholder) {
 	color: #94a3b8;
 }
 
-.modal-container .form-input[disabled] {
+:deep(.form-input[disabled]) {
 	opacity: 0.6;
 	cursor: not-allowed;
 	background-color: rgba(255, 255, 255, 0.05);
 }
 
-.modal-container textarea.form-input {
+:deep(textarea.form-input) {
 	resize: vertical;
-	min-height: 80px;
+	min-height: 110px;
 	line-height: 1.4;
 }
 
-.modal-container select.form-input {
+:deep(select.form-input) {
 	cursor: pointer;
 }
 
-.modal-container .btn {
+:deep(.btn) {
 	padding: 0.75rem 1.5rem;
 	border: none;
 	border-radius: 6px;
@@ -159,75 +166,75 @@ export default defineComponent({
 	font-size: 0.9rem;
 	font-weight: 500;
 	transition: all 0.2s ease;
-	min-width: 80px;
+	min-width: 90px;
 }
 
-.modal-container .btn:disabled {
+:deep(.btn:disabled) {
 	opacity: 0.6;
 	cursor: not-allowed;
 }
 
-.modal-container .btn-primary {
+:deep(.btn-primary) {
 	background-color: #42b983;
 	color: white;
 }
 
-.modal-container .btn-primary:hover:not(:disabled) {
+:deep(.btn-primary:hover:not(:disabled)) {
 	background-color: #369870;
 	transform: translateY(-1px);
 }
 
-.modal-container .btn-secondary {
+:deep(.btn-secondary) {
 	background-color: #6c757d;
 	color: white;
 }
 
-.modal-container .btn-secondary:hover:not(:disabled) {
+:deep(.btn-secondary:hover:not(:disabled)) {
 	background-color: #5a6268;
 	transform: translateY(-1px);
 }
 
-.modal-container .btn-danger {
+:deep(.btn-danger) {
 	background-color: #e74c3c;
 	color: white;
 }
 
-.modal-container .btn-danger:hover:not(:disabled) {
+:deep(.btn-danger:hover:not(:disabled)) {
 	background-color: #c0392b;
 	transform: translateY(-1px);
 }
 
-.modal-container .error-message {
+:deep(.error-message) {
 	color: #ff6b81;
 	font-size: 0.85rem;
-	margin-top: 0.5rem;
+	margin-top: 0.25rem;
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 }
 
-.modal-container .info-section {
+:deep(.info-section) {
 	background-color: rgba(66, 185, 131, 0.1);
 	border: 1px solid rgba(66, 185, 131, 0.3);
 	border-radius: 6px;
 	padding: 1rem;
-	margin: 1rem 0;
+	margin: 0.5rem 0;
 }
 
-.modal-container .warning-section {
+:deep(.warning-section) {
 	background-color: rgba(255, 193, 7, 0.1);
 	border: 1px solid rgba(255, 193, 7, 0.3);
 	border-radius: 6px;
 	padding: 1rem;
-	margin: 1rem 0;
+	margin: 0.5rem 0;
 }
 
-.modal-container .error-section {
+:deep(.error-section) {
 	background-color: rgba(231, 76, 60, 0.1);
 	border: 1px solid rgba(231, 76, 60, 0.3);
 	border-radius: 6px;
 	padding: 1rem;
-	margin: 1rem 0;
+	margin: 0.5rem 0;
 }
 
 .modal-default-button {

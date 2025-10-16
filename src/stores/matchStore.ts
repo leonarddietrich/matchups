@@ -106,10 +106,13 @@ export const useMatchStore = defineStore('matchStore', {
 		 * @param collection : AnyMatchCollection - The updated match collection.
 		 */
 		updateMatchCollection(collection: AnyMatchCollection) {
-			const index = this.matchCollections.findIndex(c => c.name === collection.name)
+			let index = this.matchCollections.findIndex(c => c.uuid === collection.uuid)
 			if (index === -1) {
-				console.warn(`Match collection with name ${collection.name} does not exist.`)
-				return
+				index = this.matchCollections.findIndex(c => c.name === collection.name)
+				if (index === -1) {
+					console.warn(`Match collection with uuid ${collection.uuid} does not exist.`)
+					return
+				}
 			}
 			this.matchCollections[index] = collection
 			this.saveToStorage()
