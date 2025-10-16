@@ -9,6 +9,7 @@ import ClairenPortrait from '@/assets/roa2/characters/RoA2_Clairen_Portrait.png'
 import EtalusPortrait from '@/assets/roa2/characters/RoA2_Etalus_Portrait.png';
 import FleetPortrait from '@/assets/roa2/characters/RoA2_Fleet_Portrait.png';
 import ForsburnPortrait from '@/assets/roa2/characters/RoA2_Forsburn_Portrait.png';
+import GalvanPortrait from '@/assets/roa2/characters/RoA2_Galvan_Portrait.png';
 // import HodanPortrait from '@/assets/roa2/characters/RoA2_Hodan_Portrait.png';
 import KraggPortrait from '@/assets/roa2/characters/RoA2_Kragg_Portrait.png';
 // import LaReinaPortrait from '@/assets/roa2/characters/RoA2_La_Reina_Portrait.png';
@@ -67,7 +68,7 @@ export const RIVALS: Rival[] = [
 	},
 	{
 		name: 'Loxodont',
-		element: 'Earth',
+		element: 'Fire',
 		iconPath: LoxodontPortrait,
 		color: '#4B0082',
 	},
@@ -84,8 +85,14 @@ export const RIVALS: Rival[] = [
 		color: '#FFD700',
 	},
 	{
+		name: 'Galvan',
+		element: 'Earth',
+		iconPath: GalvanPortrait,
+		color: '#FFFF00',
+	},
+	{
 		name: 'Olympia',
-		element: 'Water',
+		element: 'Earth',
 		iconPath: OlympiaPortrait,
 		color: '#FF00FF',
 	},

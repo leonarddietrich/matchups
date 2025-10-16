@@ -20,6 +20,7 @@ export type RivalName =
 	| 'Loxodont'
 	| 'Fleet'
 	| 'La Reina'
+	| 'Galvan'
 
 export type StageName =
 	| 'Aetherian Forest'
