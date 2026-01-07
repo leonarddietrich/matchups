@@ -56,7 +56,7 @@
 							<button
 								v-if="rounds.length > 1"
 								@click="removeRound(index)"
-								class="btn btn-danger btn-small"
+								class="u-btn u-btn--danger u-pill u-btn--sm"
 							>
 								Remove
 							</button>
@@ -125,7 +125,7 @@
 
 					<button
 						@click="addRound"
-						class="btn btn-secondary btn-add-round"
+						class="u-btn u-btn--secondary u-pill btn-add-round"
 						:disabled="rounds.length >= maxRoundsAllowed"
 					>
 						+ Add Round ({{ rounds.length }}/{{ maxRoundsAllowed }})
@@ -139,7 +139,7 @@
 							<h5>Link {{ index + 1 }}</h5>
 							<button
 								@click="removeLink(index)"
-								class="btn btn-danger btn-small"
+								class="u-btn u-btn--danger u-pill u-btn--sm"
 							>
 								Remove
 							</button>
@@ -170,18 +170,18 @@
 						</div>
 					</div>
 
-					<button @click="addLink" class="btn btn-secondary btn-add-link">
+					<button @click="addLink" class="u-btn u-btn--secondary u-pill btn-add-link">
 						+ Add Link
 					</button>
 				</div>
 			</div>
 		</template>
 		<template v-slot:footer>
-			<button @click="$emit('closeAddMatchModal')" class="btn btn-secondary">Cancel</button>
+			<button @click="$emit('closeAddMatchModal')" class="u-btn u-btn--secondary u-pill">Cancel</button>
 			<button
 				:disabled="!isFormValid"
 				@click="saveMatch"
-				class="btn btn-primary"
+				class="u-btn u-btn--primary u-pill"
 			>
 				Save Match
 			</button>

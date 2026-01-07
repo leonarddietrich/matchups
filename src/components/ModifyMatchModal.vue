@@ -100,7 +100,7 @@
 							<button
 								v-if="modifiedMatch.rounds.length > 1"
 								@click="removeRound(index)"
-								class="btn btn-danger btn-small"
+								class="u-btn u-btn--danger u-pill u-btn--sm"
 							>
 								Remove
 							</button>
@@ -194,8 +194,7 @@
 					<button
 						@click="addRound"
 						:disabled="modifiedMatch.rounds.length >= maxRoundsAllowed"
-						class="btn btn-secondary btn-add-round"
-						:class="{ 'btn-disabled': modifiedMatch.rounds.length >= maxRoundsAllowed }"
+						class="u-btn u-btn--secondary u-pill btn-add-round"
 					>
 						+ Add Round
 						<span v-if="modifiedMatch.rounds.length >= maxRoundsAllowed" class="disabled-hint">
@@ -211,7 +210,7 @@
 							<h5>Link {{ index + 1 }}</h5>
 							<button
 								@click="removeLink(index)"
-								class="btn btn-danger btn-small"
+								class="u-btn u-btn--danger u-pill u-btn--sm"
 							>
 								Remove
 							</button>
@@ -254,19 +253,19 @@
 						</div>
 					</div>
 
-					<button @click="addLink" class="btn btn-secondary btn-add-link">
+					<button @click="addLink" class="u-btn u-btn--secondary u-pill btn-add-link">
 						+ Add Link
 					</button>
 				</div>
 			</div>
 		</template>
 		<template v-slot:footer>
-			<button @click="handleCancel" class="btn btn-secondary">Cancel</button>
-			<button @click="deleteMatch" class="btn btn-danger">Delete Match</button>
+			<button @click="handleCancel" class="u-btn u-btn--secondary u-pill">Cancel</button>
+			<button @click="deleteMatch" class="u-btn u-btn--danger u-pill">Delete Match</button>
 			<button
 				:disabled="!isFormValid"
 				@click="saveMatch"
-				class="btn btn-primary"
+				class="u-btn u-btn--primary u-pill"
 			>
 				Save Changes
 			</button>
@@ -681,25 +680,10 @@ function resetForm() {
 	gap: 1rem;
 }
 
-.btn-small {
-	padding: 0.25rem 0.5rem;
-	font-size: 0.8rem;
-}
-
 .btn-add-round,
 .btn-add-link {
 	width: 100%;
 	margin-top: 1rem;
-}
-
-.btn-disabled {
-	background-color: #666 !important;
-	color: #999 !important;
-	cursor: not-allowed !important;
-}
-
-.btn-disabled:hover {
-	background-color: #666 !important;
 }
 
 .disabled-hint {

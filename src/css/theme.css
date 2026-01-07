@@ -1,0 +1,150 @@
+/*
+Global theme tokens and lightweight utilities for a consistent look
+- Define color tokens that match the current design (glass surfaces, borders, text)
+- Provide small, opt-in utility classes you can add in templates without
+  fighting scoped styles
+Usage examples:
+  <div class="u-glass-panel u-stack-md">...</div>
+  <button class="u-btn u-btn--primary u-pill">Create</button>
+*/
+
+:root {
+  /* Core palette */
+  --c-text-primary: #e4e8ff;
+  --c-text-muted: rgba(219, 226, 255, 0.88);
+
+  --c-bg-glass: rgba(10, 14, 37, 0.68);
+  --c-surface: rgba(6, 10, 28, 0.65);
+  --c-surface-strong: rgba(6, 10, 28, 0.7);
+  --c-surface-soft: rgba(8, 12, 32, 0.55);
+
+  --c-border: rgba(96, 112, 202, 0.32);
+  --c-border-muted: rgba(96, 112, 202, 0.22);
+
+  --c-accent: rgba(116, 140, 255, 0.92);
+  --c-accent-strong: rgba(116, 140, 255, 0.95);
+  --c-accent-contrast: #060819;
+  --c-accent-shadow: rgba(64, 94, 250, 0.35);
+
+  --c-success: rgba(66, 185, 131, 1);
+
+  /* Shape + effects */
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-pill: 10px;
+  --blur-sm: 6px;
+  --shadow-xl: 0 24px 60px rgba(4, 6, 16, 0.55);
+  --shadow-md: 0 12px 35px rgba(32, 46, 112, 0.35);
+}
+
+/* ---------- Reusable containers ---------- */
+.u-glass-panel {
+  background-color: var(--c-bg-glass);
+  border: 1px solid var(--c-border);
+  color: var(--c-text-primary);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(var(--blur-sm));
+  box-shadow: var(--shadow-xl);
+}
+
+.u-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-muted);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+/* ---------- Buttons ---------- */
+.u-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.7rem 1.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid rgba(120, 135, 210, 0.35);
+  background: var(--c-surface-strong);
+  color: #f0f5ff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.u-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px rgba(32, 46, 112, 0.35);
+  background: rgba(10, 16, 38, 0.85);
+}
+
+.u-btn--primary {
+  background: var(--c-accent-strong);
+  color: var(--c-accent-contrast);
+  border-color: rgba(177, 193, 255, 0.6);
+  box-shadow: 0 12px 35px var(--c-accent-shadow);
+}
+
+.u-btn--primary:hover {
+  background: rgba(140, 163, 255, 0.98);
+  box-shadow: 0 18px 42px rgba(74, 104, 246, 0.4);
+}
+
+/* Disabled state */
+.u-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.u-pill { border-radius: var(--radius-pill); }
+
+/* Secondary and danger variants for modals/actions */
+.u-btn--secondary {
+  background: linear-gradient(135deg, rgba(98, 110, 160, 0.85), rgba(74, 86, 130, 0.92));
+  color: rgba(230, 236, 255, 0.92);
+  border-color: rgba(132, 148, 220, 0.45);
+}
+.u-btn--secondary:hover {
+  background: linear-gradient(135deg, rgba(110, 122, 176, 0.9), rgba(88, 100, 150, 0.98));
+}
+
+.u-btn--danger {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.92), rgba(229, 90, 90, 0.95));
+  color: #fff6f6;
+  border-color: rgba(255, 138, 138, 0.6);
+}
+.u-btn--danger:hover {
+  background: linear-gradient(135deg, rgba(255, 128, 128, 0.95), rgba(239, 110, 110, 0.98));
+}
+
+/* Size variants */
+.u-btn--sm {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+/* ---------- Grids / stacks ---------- */
+.u-grid-autofit-220 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.1rem;
+}
+
+.u-stack-sm { display: flex; flex-direction: column; gap: 0.75rem; }
+.u-stack-md { display: flex; flex-direction: column; gap: 1.25rem; }
+.u-stack-lg { display: flex; flex-direction: column; gap: 2rem; }
+
+/* ---------- Inputs (dark-select + number-spinners off) ---------- */
+.u-select {
+  cursor: pointer;
+  background-color: rgba(14, 20, 36, 0.92);
+  color: #f8fafc;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
+}
+.u-select:focus { background-color: rgba(20, 28, 48, 0.95); outline: none; }
+
+input[type="number"].u-input-nospin { appearance: textfield; -moz-appearance: textfield; }
+input[type="number"].u-input-nospin::-webkit-inner-spin-button,
+input[type="number"].u-input-nospin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }

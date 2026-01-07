@@ -33,8 +33,8 @@
 		</template>
 
 		<template #footer>
-			<button class="btn btn-secondary" @click="handleClose">Cancel</button>
-			<button class="btn btn-primary" :disabled="!isFormValid" @click="handleSubmit">Save Changes</button>
+			<button class="u-btn u-btn--secondary u-pill" @click="handleClose">Cancel</button>
+			<button class="u-btn u-btn--primary u-pill" :disabled="!isFormValid" @click="handleSubmit">Save Changes</button>
 		</template>
 	</BaseModal>
 </template>

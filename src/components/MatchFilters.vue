@@ -1,5 +1,5 @@
 <template>
-	<div class="filter-container" :class="{ 'has-active-filters': hasActiveFilters, 'filters-expanded': showFilters }">
+	<div class="filter-container u-card" :class="{ 'has-active-filters': hasActiveFilters, 'filters-expanded': showFilters }">
 		<!-- Active Filters Display -->
 		<div class="active-filters" v-if="hasActiveFilters">
 			<span class="active-filters-label">Active:</span>
@@ -78,7 +78,7 @@
 
 		<!-- Filter Toggle Button -->
 		<div class="filter-toggle-section">
-			<button @click="toggleFilters" class="filter-toggle-button">
+			<button @click="toggleFilters" class="filter-toggle-button u-btn u-pill">
 				<span>{{ showFilters ? '▼' : '▶' }}</span>
 				<span>Filter Options</span>
 			</button>
@@ -228,7 +228,7 @@
 
 			<!-- Clear Filters -->
 			<div class="filter-actions">
-				<button @click="clearAllFilters" class="clear-button">Clear All Filters</button>
+				<button @click="clearAllFilters" class="clear-button u-btn u-pill">Clear All Filters</button>
 			</div>
 		</div>
 	</div>
@@ -432,7 +432,6 @@ function clearAllFilters() {
 .filter-container {
 	background-color: rgba(0, 0, 0, 0.1);
 	padding: 1rem;
-	border-radius: 8px;
 	margin-bottom: 1rem;
 	transition: background-color 0.3s ease;
 }
@@ -461,12 +460,8 @@ function clearAllFilters() {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	padding: 0.5rem 1rem;
 	background-color: #42b983;
 	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
 	font-size: 1rem;
 }
 
@@ -647,12 +642,8 @@ function clearAllFilters() {
 }
 
 .clear-button {
-	padding: 0.5rem 1rem;
 	background-color: #f44336;
 	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
 }
 
 .clear-button:hover {

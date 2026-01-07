@@ -12,7 +12,7 @@ import ForsburnPortrait from '@/assets/roa2/characters/RoA2_Forsburn_Portrait.pn
 import GalvanPortrait from '@/assets/roa2/characters/RoA2_Galvan_Portrait.png';
 // import HodanPortrait from '@/assets/roa2/characters/RoA2_Hodan_Portrait.png';
 import KraggPortrait from '@/assets/roa2/characters/RoA2_Kragg_Portrait.png';
-// import LaReinaPortrait from '@/assets/roa2/characters/RoA2_La_Reina_Portrait.png';
+import LaReinaPortrait from '@/assets/roa2/characters/RoA2_La_Reina_Portrait.png';
 import LoxodontPortrait from '@/assets/roa2/characters/RoA2_Loxodont_Portrait.png';
 import MaypulPortrait from '@/assets/roa2/characters/RoA2_Maypul_Portrait.png';
 // import MolloPortrait from '@/assets/roa2/characters/RoA2_Mollo_Portrait.png';
@@ -83,6 +83,12 @@ export const RIVALS: Rival[] = [
 		element: 'Fire',
 		iconPath: ZetterburnPortrait,
 		color: '#FFD700',
+	},
+	{
+		name: 'La Reina',
+		element: 'Fire',
+		iconPath: LaReinaPortrait,
+		color: '#C71585',
 	},
 	{
 		name: 'Galvan',
@@ -173,12 +179,6 @@ export const RIVALS: Rival[] = [
 	// 	element: 'Air',
 	// 	iconPath: PommePortrait,
 	// 	color: '#FF69B4',
-	// },
-	// {
-	// 	name: 'La Reina',
-	// 	element: 'Fire',
-	// 	iconPath: LaReinaPortrait,
-	// 	color: '#C71585',
 	// },
 ]
 

@@ -83,11 +83,11 @@
 			</div>
 		</template>
 		<template v-slot:footer>
-			<button @click="$emit('closeJsonUploadModal')" class="btn btn-secondary">Cancel</button>
+			<button @click="$emit('closeJsonUploadModal')" class="u-btn u-btn--secondary u-pill">Cancel</button>
 			<button
 				:disabled="!canImport"
 				@click="importCollection"
-				class="btn btn-primary"
+				class="u-btn u-btn--primary u-pill"
 			>
 				{{ conflictInfo ? 'Resolve & Import' : 'Import Collection' }}
 			</button>

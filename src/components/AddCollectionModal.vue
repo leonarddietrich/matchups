@@ -36,10 +36,13 @@
 						v-model="collectionType"
 						class="form-input"
 					>
-						<option value="ranked">Ranked</option>
-						<option value="casual">Casual</option>
-						<option value="friendly">Friendly</option>
-						<option value="tournament">Tournament</option>
+						<option
+							v-for="option in matchTypeOptions"
+							:key="option.value"
+							:value="option.value"
+						>
+							{{ option.label }}
+						</option>
 					</select>
 				</div>
 
@@ -49,11 +52,11 @@
 			</div>
 		</template>
 		<template v-slot:footer>
-			<button @click="$emit('closeAddCollectionModal')" class="btn btn-secondary">Cancel</button>
+			<button @click="$emit('closeAddCollectionModal')" class="u-btn u-btn--secondary u-pill">Cancel</button>
 			<button
 				:disabled="!isFormComplete"
 				@click="createCollection"
-				class="btn btn-primary"
+				class="u-btn u-btn--primary u-pill"
 			>
 				Create Collection
 			</button>
@@ -67,7 +70,7 @@ import BaseModal from './BaseModal.vue'
 import type { AnyMatchCollection, MatchType } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import { CURRENT_MATCH_DATA_VERSION } from '@/constants'
+import { CURRENT_MATCH_DATA_VERSION, MATCH_TYPES } from '@/constants'
 
 const props = defineProps<{
 	display: boolean
@@ -80,10 +83,16 @@ const emit = defineEmits<{
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
 
+const defaultCollectionType: MatchType = MATCH_TYPES[0]
 const collectionName = ref('')
 const collectionDescription = ref('')
-const collectionType = ref<MatchType>('ranked')
+const collectionType = ref<MatchType>(defaultCollectionType)
 const nameError = ref('')
+
+const matchTypeOptions = MATCH_TYPES.map(type => ({
+	value: type,
+	label: type.charAt(0).toUpperCase() + type.slice(1)
+}))
 
 // Watch for name changes to validate uniqueness
 watch(collectionName, (newName) => {
@@ -104,7 +113,7 @@ const isFormComplete = computed(() => {
 	return (
 		collectionName.value.trim() !== '' &&
 		collectionDescription.value.trim() !== '' &&
-		['ranked', 'casual', 'friendly', 'tournament'].includes(collectionType.value) &&
+		MATCH_TYPES.includes(collectionType.value) &&
 		nameError.value === ''
 	)
 })
@@ -144,7 +153,7 @@ function createCollection() {
 function resetForm() {
 	collectionName.value = ''
 	collectionDescription.value = ''
-	collectionType.value = 'ranked'
+	collectionType.value = defaultCollectionType
 	nameError.value = ''
 }
 

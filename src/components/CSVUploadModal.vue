@@ -91,11 +91,11 @@
 			</div>
 		</template>
 		<template v-slot:footer>
-			<button @click="$emit('closeCSVUploadModal')" class="btn btn-secondary">Close</button>
+			<button @click="$emit('closeCSVUploadModal')" class="u-btn u-btn--secondary u-pill">Close</button>
 			<button
 				:disabled="!isMatchCollectionComplete"
 				@click="buildAndSaveCollection()"
-				class="btn btn-primary"
+				class="u-btn u-btn--primary u-pill"
 			>
 				Save Match Collection
 			</button>

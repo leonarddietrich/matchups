@@ -1,7 +1,7 @@
 <template>
 	<div class="navbar">
 		<div class="navbar-brand">
-			<img src="@/assets/site/sports-fight-svgrepo-com.svg" alt="Logo" class="logo" />
+			<img src="@/assets/site/matchups.png" alt="Logo" class="logo" />
 		</div>
 		<MatchCollectionSelector />
 		<nav>
@@ -40,12 +40,9 @@ main {
 	display: block;
 	padding-top: 60px; /* adjusted for fixed navbar */
 }
-
-img {
-	width: 40px;
+.logo {
 	height: 40px;
 }
-
 #RouterLink {
 	margin: 0 10px;
 	text-decoration: none;
