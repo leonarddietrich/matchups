@@ -8,36 +8,6 @@
 				<div class="match-details-section">
 					<h4>Match Details</h4>
 
-					<div v-if="isRankedCollection" class="form-group">
-						<label for="player-elo">Player Elo</label>
-						<div class="old-new-container">
-							<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'playerElo') }}</span>
-							<input
-								id="player-elo"
-								type="number"
-								placeholder="-1 for unranked"
-								:value="getEloValue(modifiedMatch, 'playerElo') || 0"
-								@input="setEloValue(modifiedMatch, 'playerElo', Number(($event.target as HTMLInputElement).value))"
-								class="form-input"
-							/>
-						</div>
-					</div>
-
-					<div v-if="isRankedCollection" class="form-group">
-						<label for="opponent-elo">Opponent Elo</label>
-						<div class="old-new-container">
-							<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'opponentElo') }}</span>
-							<input
-								id="opponent-elo"
-								type="number"
-								placeholder="-1 for unranked"
-								:value="getEloValue(modifiedMatch, 'opponentElo') || 0"
-								@input="setEloValue(modifiedMatch, 'opponentElo', Number(($event.target as HTMLInputElement).value))"
-								class="form-input"
-							/>
-						</div>
-					</div>
-
 					<div class="form-group">
 						<label for="opponent-name">Opponent Name *</label>
 						<div class="old-new-container">
@@ -57,39 +27,39 @@
 						</div>
 					</div>
 
-					<!-- ELO fields - only show for ranked collections -->
-					<div v-if="isRankedCollection" class="elo-section">
-						<div class="form-row">
-							<div class="form-group">
-								<label for="player-elo-alt">Player ELO</label>
-								<div class="old-new-container">
-									<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'playerElo') }}</span>
-									<input
-										id="player-elo-alt"
-										type="number"
-										placeholder="-1 for unranked"
-										:value="getEloValue(modifiedMatch, 'playerElo') || 0"
-										@input="setEloValue(modifiedMatch, 'playerElo', Number(($event.target as HTMLInputElement).value))"
-										class="form-input"
-									/>
-								</div>
+				<!-- ELO fields - only show for ranked collections -->
+				<div v-if="isRankedCollection" class="elo-section">
+					<div class="form-row">
+						<div class="form-group">
+							<label for="player-elo">Player ELO</label>
+							<div class="old-new-container">
+								<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'playerElo') }}</span>
+								<input
+									id="player-elo"
+									type="number"
+									placeholder="-1 for unranked"
+									:value="getEloValue(modifiedMatch, 'playerElo') || 0"
+									@input="setEloValue(modifiedMatch, 'playerElo', Number(($event.target as HTMLInputElement).value))"
+									class="form-input"
+								/>
 							</div>
-							<div class="form-group">
-								<label for="opponent-elo-alt">Opponent ELO</label>
-								<div class="old-new-container">
-									<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'opponentElo') }}</span>
-									<input
-										id="opponent-elo-alt"
-										type="number"
-										placeholder="-1 for unranked"
-										:value="getEloValue(modifiedMatch, 'opponentElo') || 0"
-										@input="setEloValue(modifiedMatch, 'opponentElo', Number(($event.target as HTMLInputElement).value))"
-										class="form-input"
-									/>
-								</div>
+						</div>
+						<div class="form-group">
+							<label for="opponent-elo">Opponent ELO</label>
+							<div class="old-new-container">
+								<span class="old-value">old: {{ getEloDisplayValue(originalMatch, 'opponentElo') }}</span>
+								<input
+									id="opponent-elo"
+									type="number"
+									placeholder="-1 for unranked"
+									:value="getEloValue(modifiedMatch, 'opponentElo') || 0"
+									@input="setEloValue(modifiedMatch, 'opponentElo', Number(($event.target as HTMLInputElement).value))"
+									class="form-input"
+								/>
 							</div>
 						</div>
 					</div>
+				</div>
 				</div>
 
 				<div class="rounds-section">
