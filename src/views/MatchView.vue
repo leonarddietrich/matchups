@@ -99,14 +99,16 @@ const filteredMatches = computed(() => {
 		return []
 	}
 
+	const sortedMatches = sortMatchesByDate(matchCollection.value.matches, false)
+
 	const filters = selectionStore.getCurrentFilters
 	// If no filters are active, return all matches
 	if (Object.keys(filters).length === 0) {
-		return matchCollection.value.matches
+		return sortedMatches
 	}
 
 	// Apply filters to matches
-	return filterMatches(matchCollection.value.matches, filters)
+	return filterMatches(sortedMatches, filters)
 })
 
 function handleFiltersUpdate(newFilters: MatchFiltersType) {
@@ -121,6 +123,14 @@ function openModifyModal(match: Match) {
 function closeModifyModal() {
 	showModifyModal.value = false
 	selectedMatch.value = null
+}
+
+function sortMatchesByDate(matches: Match[], sortAscending: boolean): Match[] {
+	return matches.slice().sort((a, b) => {
+		const dateA = new Date(a.createdAt).getTime()
+		const dateB = new Date(b.createdAt).getTime()
+		return sortAscending ? dateA - dateB : dateB - dateA
+	})
 }
 </script>
 
