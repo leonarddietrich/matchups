@@ -10,16 +10,16 @@
 		>
 			<picture v-if="type === 'stages'">
 				<source :srcset="getStageIcon(item as Stage).webp" type="image/webp" />
-				<img :src="getStageIcon(item as Stage).png" :alt="item.name" loading="lazy" />
+				<img :src="getStageIcon(item as Stage).png" :alt="item.name" loading="lazy" decoding="async"/>
 			</picture>
-			<img v-else :src="item.iconPath" :alt="item.name" loading="lazy" :class="{ 'opponent-character': type === 'characters' && props.isOpponent }" />
+			<img v-else :src="item.iconPath" :alt="item.name" loading="lazy" decoding="async" :class="{ 'opponent-character': type === 'characters' && props.isOpponent }" />
 			<span class="icon-overlay-label">{{ item.name }}</span>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RIVALS, STAGES } from '@/constants/roa2'
 import type { Stage } from '@/types/roa2Types'
 import { getStageIconPathByName } from '@/scripts/roa2'
@@ -47,11 +47,16 @@ const availableItems = computed(() => {
 	}
 })
 
+const stageIconCache = ref(new Map<string, { webp: string; png: string }>())
+
 function getStageIcon(stage: Stage): { webp: string; png: string } {
-	return {
-		webp: getStageIconPathByName(stage.name, ImageFormat.WEBP),
-		png: getStageIconPathByName(stage.name, ImageFormat.PNG),
+	if (!stageIconCache.value.has(stage.name)) {
+		stageIconCache.value.set(stage.name, {
+			webp: getStageIconPathByName(stage.name, ImageFormat.WEBP),
+			png: getStageIconPathByName(stage.name, ImageFormat.PNG),
+		})
 	}
+	return stageIconCache.value.get(stage.name)!
 }
 
 function select(itemName: string) {

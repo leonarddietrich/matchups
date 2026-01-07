@@ -45,7 +45,6 @@ export default defineComponent({
 	width: 100%;
 	height: 100%;
 	background: rgba(4, 6, 16, 0.7);
-	backdrop-filter: blur(3px);
 	transition: opacity 0.3s ease;
 	display: flex;
 	z-index: 1000;
