@@ -56,128 +56,98 @@ export const RIVALS: Rival[] = [
 		name: 'Forsburn',
 		element: 'Fire',
 		iconPath: ForsburnPortrait,
-		color: '#008000',
+		color: '#333344',
 	},
 	{
 		name: 'Loxodont',
 		element: 'Fire',
 		iconPath: LoxodontPortrait,
-		color: '#4B0082',
+		color: '#444444',
 	},
 	{
 		name: 'Clairen',
 		element: 'Fire',
 		iconPath: ClairenPortrait,
-		color: '#FF0000',
+		color: '#990044',
 	},
 	{
 		name: 'Zetterburn',
 		element: 'Fire',
 		iconPath: ZetterburnPortrait,
-		color: '#FFD700',
+		color: '#FFAA00',
 	},
 	{
 		name: 'La Reina',
 		element: 'Fire',
 		iconPath: LaReinaPortrait,
-		color: '#C71585',
+		color: '#993355',
 	},
 	{
 		name: 'Galvan',
 		element: 'Earth',
 		iconPath: GalvanPortrait,
-		color: '#FFFF00',
+		color: '#224444',
 	},
 	{
 		name: 'Olympia',
 		element: 'Earth',
 		iconPath: OlympiaPortrait,
-		color: '#FF00FF',
+		color: '#AA9999',
 	},
 	{
 		name: 'Maypul',
 		element: 'Earth',
 		iconPath: MaypulPortrait,
-		color: '#EE82EE',
+		color: '#335522',
 	},
 	{
 		name: 'Kragg',
 		element: 'Earth',
 		iconPath: KraggPortrait,
-		color: '#0000FF',
+		color: '#663322',
 	},
 	{
 		name: 'Wrastor',
 		element: 'Air',
 		iconPath: WrastorPortrait,
-		color: '#00FFFF',
+		color: '#331144',
 	},
 	{
 		name: 'Fleet',
 		element: 'Air',
 		iconPath: FleetPortrait,
-		color: '#FFFF00',
+		color: '#CC6644',
 	},
 	{
 		name: 'Absa',
 		element: 'Air',
 		iconPath: AbsaPortrait,
-		color: '#B0E0E6',
+		color: '#444477',
 	},
 	{
 		name: 'Ranno',
 		element: 'Water',
 		iconPath: RannoPortrait,
-		color: '#FF4500',
+		color: '#66CC33',
 	},
 	{
 		name: 'Orcane',
 		element: 'Water',
 		iconPath: OrcanePortrait,
-		color: '#FF1493',
+		color: '#334499',
 	},
 	{
 		name: 'Etalus',
 		element: 'Water',
 		iconPath: EtalusPortrait,
-		color: '#FFA500',
+		color: '#EEFFFF',
 	},
 	{
 		name: 'Slade',
 		element: 'Water',
 		iconPath: SladePortrait,
-		color: '#1E90FF',
+		color: '#334477',
 	}
-	// {
-	// 	name: 'Sylvanos',
-	// 	element: 'Earth',
-	// 	iconPath: SylvanosPortrait,
-	// 	color: '#228B22',
-	// },
-	// {
-	// 	name: 'Elliana',
-	// 	element: 'Air',
-	// 	iconPath: EllianaPortrait,
-	// 	color: '#B0E0E6',
-	// },
-	// {
-	// 	name: 'Mollo',
-	// 	element: 'Fire',
-	// 	iconPath: MolloPortrait,
-	// 	color: '#A0522D',
-	// },
-	// {
-	// 	name: 'Hodan',
-	// 	element: 'Earth',
-	// 	iconPath: HodanPortrait,
-	// 	color: '#8B4513',
-	// },
-	// {
-	// 	name: 'Pomme',
-	// 	element: 'Air',
-	// 	iconPath: PommePortrait,
-	// 	color: '#FF69B4',
-	// },
 ]
 
 /**
@@ -237,7 +207,23 @@ export const STAGES: Stage[] = [
 ]
 
 /** List of all rival elements */
-export const RIVAL_ELEMENTS: readonly RivalElement[] = ['Fire', 'Water', 'Air', 'Earth'] as const;
+export const RIVAL_ELEMENTS: readonly {name: RivalElement, color: string}[] = [
+	{ name:'Fire',
+		color: '#C43445'
+	},
+	{
+		name: 'Air',
+		color: '#C88DCD'
+	},
+	{
+		name: 'Earth',
+		color: '#64A95E'
+	},
+	{
+		name: 'Water',
+		color: '#6179CD'
+	},
+] as const;
 
 /** List of all rival names */
 export const RIVAL_NAMES = RIVALS.map(rival => rival.name);

@@ -14,6 +14,10 @@
 			To get started, create a new match collection or upload existing data.
 		</p>
 
+		<div class="statistics">
+			<StatisticsOverview />
+		</div>
+
 		<!-- Match Collection Overview -->
 		<div class="overview-container">
 			<MatchCollectionOverview />
@@ -68,6 +72,7 @@
 import { ref, computed } from 'vue'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+import StatisticsOverview from '@/components/StatisticsOverview.vue'
 import MatchCollectionOverview from '@/components/MatchCollectionOverview.vue'
 import AddCollectionModal from '@/components/AddCollectionModal.vue'
 import CSVUploadModal from '@/components/CSVUploadModal.vue'
