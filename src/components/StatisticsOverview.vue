@@ -67,6 +67,29 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="most-played">
+		<h2>Most Played Matchups</h2>
+		<div v-if="mostPlayedMatchups.length === 0" class="matchup-empty">No matchups yet</div>
+		<div
+			v-for="matchup in mostPlayedMatchups"
+			:key="`most-${matchup.player.name}-${matchup.opponent.name}`"
+			class="matchup-row"
+		>
+			<div class="matchup-pair">
+				<img class="matchup-icon" :src="matchup.player.iconPath" :alt="matchup.player.name" />
+				<img
+					class="matchup-icon opponent"
+					:src="matchup.opponent.iconPath"
+					:alt="matchup.opponent.name"
+				/>
+			</div>
+			<span class="matchup-played">{{ matchup.played }} rounds</span>
+			<span class="matchup-winrate" :style="{ color: getWinrateColor(matchup.winrate) }">
+				{{ formatWinrate(matchup.winrate) }}
+			</span>
+		</div>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -230,6 +253,11 @@ const worstMatchups = computed(() =>
 	matchupClusters.value.slice(-3).reverse(),
 );
 
+/** The 10 matchups that were played the most, ordered by rounds played. */
+const mostPlayedMatchups = computed<MatchupStat[]>(() =>
+	[...matchupStats.value].sort((a, b) => b.played - a.played).slice(0, 10),
+);
+
 function formatWinrate(winrate: number): string {
 	return `${Math.round(winrate * 100)}%`;
 }
@@ -339,11 +367,11 @@ onBeforeUnmount(() => {
 .matchup-row {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
-	padding: 0.5rem 0.75rem;
+	gap: 0.5rem;
+	padding: 0.4rem 0.6rem;
 	border-radius: 10px;
 	background: rgba(255, 255, 255, 0.05);
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.4rem;
 }
 
 .matchup-pairs {
@@ -376,5 +404,20 @@ onBeforeUnmount(() => {
 	margin-left: auto;
 	font-weight: 700;
 	font-size: 1.1rem;
+}
+
+.most-played {
+	margin: 2rem auto 0;
+	max-width: 420px;
+}
+
+.most-played h2 {
+	text-align: center;
+	margin-bottom: 1rem;
+}
+
+.matchup-played {
+	margin-left: 0.75rem;
+	opacity: 0.75;
 }
 </style>
