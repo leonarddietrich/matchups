@@ -73,7 +73,7 @@
 			<div class="stat-field accent" role="status" aria-live="polite">
 				<span class="stat-label">Total Win Rate:</span>
 				<span class="stat-value">{{ Math.round(totalWinRate ?? 0) }}%</span>
-				<span class="stat-sub">( {{ totalRoundsPlayed ?? 0 }} / {{ totalRoundsWon ?? 0 }} )</span>
+				<span class="stat-sub">( {{ totalRoundsWon ?? 0 }} / {{ totalRoundsPlayed ?? 0 }} )</span>
 			</div>
 			<StageInsight :stage-performance="stagePerformances"></StageInsight>
 		</div>
