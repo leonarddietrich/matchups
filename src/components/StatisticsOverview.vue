@@ -356,6 +356,9 @@ onBeforeUnmount(() => {
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.2);
 }
 
 .matchup-icon {
