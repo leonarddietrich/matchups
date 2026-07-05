@@ -16,7 +16,7 @@ import MaypulPortrait from '@/assets/roa2/characters/RoA2_Maypul_Portrait.png';
 import OlympiaPortrait from '@/assets/roa2/characters/RoA2_Olympia_Portrait.png';
 import OrcanePortrait from '@/assets/roa2/characters/RoA2_Orcane_Portrait.png';
 import RannoPortrait from '@/assets/roa2/characters/RoA2_Ranno_Portrait.png';
-import SladePortrait from '@assets/roa2/characters/RoA2_Slade_Portrait.png';
+import SladePortrait from '@/assets/roa2/characters/RoA2_Slade_Portrait.png';
 import WrastorPortrait from '@/assets/roa2/characters/RoA2_Wrastor_Portrait.png';
 import ZetterburnPortrait from '@/assets/roa2/characters/RoA2_Zetterburn_Portrait.png';
 
