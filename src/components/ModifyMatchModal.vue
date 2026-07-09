@@ -77,23 +77,6 @@
 						</div>
 
 						<div class="round-form-vertical">
-							<!-- Stage Selection -->
-							<div class="form-group">
-								<label>Stage *</label>
-								<div class="old-new-container">
-									<span class="old-value" v-if="originalMatch?.rounds[index]">
-										old: {{ originalMatch.rounds[index]?.stage || 'None' }}
-									</span>
-									<span class="old-value" v-else>new round</span>
-									<div :class="{ 'error': !round.stage && hasAttemptedSave }">
-										<SingleSelection
-											type="stages"
-											v-model="round.stage"
-										/>
-									</div>
-								</div>
-							</div>
-
 							<!-- Character Selection Row -->
 							<div class="character-selection-row">
 								<div class="form-group">
@@ -126,6 +109,23 @@
 												:isOpponent="true"
 											/>
 										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Stage Selection -->
+							<div class="form-group">
+								<label>Stage *</label>
+								<div class="old-new-container">
+									<span class="old-value" v-if="originalMatch?.rounds[index]">
+										old: {{ originalMatch.rounds[index]?.stage || 'None' }}
+									</span>
+									<span class="old-value" v-else>new round</span>
+									<div :class="{ 'error': !round.stage && hasAttemptedSave }">
+										<SingleSelection
+											type="stages"
+											v-model="round.stage"
+										/>
 									</div>
 								</div>
 							</div>
@@ -520,7 +520,7 @@ function resetForm() {
 <style scoped lang="css">
 /* Custom modal size for ModifyMatchModal */
 :deep(.modal-container) {
-	width: 800px !important;
+	width: 1000px !important;
 	max-width: 95vw !important;
 }
 

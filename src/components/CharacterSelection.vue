@@ -50,7 +50,7 @@ export default defineComponent({
 	emits: ['characterSelected'],
 	computed: {
 		groupedRivals(): { element: RivalElement; rivals: typeof RIVALS }[] {
-			const order: RivalElement[] = ['Fire', 'Air', 'Earth', 'Water']
+			const order: RivalElement[] = ['Fire', 'Earth', 'Air', 'Water']
 			return order.map((element) => ({
 				element,
 				rivals: RIVALS.filter((r) => r.element === element),

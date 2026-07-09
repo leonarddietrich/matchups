@@ -63,17 +63,6 @@
 						</div>
 
 						<div class="round-form-vertical">
-							<!-- Stage Selection -->
-							<div class="form-group">
-								<label>Stage</label>
-								<div :class="{ 'error': !round.stage && hasAttemptedSave }">
-									<SingleSelection
-										type="stages"
-										v-model="round.stage"
-									/>
-								</div>
-							</div>
-
 							<!-- Character Selection Row -->
 							<div class="character-selection-row">
 								<div class="form-group">
@@ -95,6 +84,17 @@
 											:isOpponent="true"
 										/>
 									</div>
+								</div>
+							</div>
+
+							<!-- Stage Selection -->
+							<div class="form-group">
+								<label>Stage</label>
+								<div :class="{ 'error': !round.stage && hasAttemptedSave }">
+									<SingleSelection
+										type="stages"
+										v-model="round.stage"
+									/>
 								</div>
 							</div>
 
@@ -122,7 +122,6 @@
 							</div>
 						</div>
 					</div>
-
 					<button
 						@click="addRound"
 						class="u-btn u-btn--secondary u-pill btn-add-round"
@@ -364,8 +363,8 @@ function resetForm() {
 <style scoped lang="css">
 /* Custom modal size for AddMatchModal */
 :deep(.modal-container) {
-	width: 700px !important;
-	max-width: 90vw !important;
+	width: 1000px !important;
+	max-width: 95vw !important;
 }
 
 .add-match-content {

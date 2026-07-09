@@ -1,27 +1,60 @@
 <template>
-	<div class="selection-grid" :class="{ 'stage-grid': type === 'stages', 'character-grid': type === 'characters' }">
-		<div
-			v-for="item in availableItems"
-			:key="item.name"
-			class="selection-option"
-			:class="{ 'selected': selectedValue === item.name, 'stage-option': type === 'stages', 'character-option': type === 'characters' }"
-			@click="select(item.name)"
-			:title="item.name"
-		>
-			<picture v-if="type === 'stages'">
-				<source :srcset="getStageIcon(item as Stage).webp" type="image/webp" />
-				<img :src="getStageIcon(item as Stage).png" :alt="item.name" loading="lazy" decoding="async"/>
-			</picture>
-			<img v-else :src="item.iconPath" :alt="item.name" loading="lazy" decoding="async" :class="{ 'opponent-character': type === 'characters' && props.isOpponent }" />
-			<span class="icon-overlay-label">{{ item.name }}</span>
-		</div>
+	<div
+		class="selection-grid"
+		:class="{ 'stage-grid': type === 'stages', 'character-grid': type === 'characters' }"
+	>
+		<!-- Characters grouped by element -->
+		<template v-if="type === 'characters'">
+			<div
+				v-for="group in groupedRivals"
+				:key="group.element"
+				class="element-group"
+				:style="{ '--element-color': elementColors[group.element] }"
+			>
+				<div
+					v-for="rival in group.rivals"
+					:key="rival.name"
+					class="selection-option character-option"
+					:class="{ selected: selectedValue === rival.name }"
+					@click="select(rival.name)"
+					:title="rival.name"
+				>
+					<img
+						:src="rival.iconPath"
+						:alt="rival.name"
+						loading="lazy"
+						decoding="async"
+						:class="{ 'opponent-character': props.isOpponent }"
+					/>
+					<span class="icon-overlay-label">{{ rival.name }}</span>
+				</div>
+			</div>
+		</template>
+
+		<!-- Stages grid (2 rows of 5) -->
+		<template v-else>
+			<div
+				v-for="stage in STAGES"
+				:key="stage.name"
+				class="selection-option stage-option"
+				:class="{ selected: selectedValue === stage.name }"
+				@click="select(stage.name)"
+				:title="stage.name"
+			>
+				<picture>
+					<source :srcset="getStageIcon(stage).webp" type="image/webp" />
+					<img :src="getStageIcon(stage).png" :alt="stage.name" loading="lazy" decoding="async" />
+				</picture>
+				<span class="icon-overlay-label">{{ stage.name }}</span>
+			</div>
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { RIVALS, STAGES } from '@/constants/roa2'
-import type { Stage } from '@/types/roa2Types'
+import type { Stage, RivalElement } from '@/types/roa2Types'
 import { getStageIconPathByName } from '@/scripts/roa2'
 import { ImageFormat } from '@/types/shared/media'
 
@@ -39,12 +72,19 @@ const emit = defineEmits<{
 
 const selectedValue = computed(() => props.modelValue)
 
-const availableItems = computed(() => {
-	if (props.type === 'stages') {
-		return STAGES
-	} else {
-		return RIVALS
-	}
+const elementColors: Record<RivalElement, string> = {
+	Fire: 'rgba(200, 60, 40, 0.35)',
+	Earth: 'rgba(90, 140, 50, 0.35)',
+	Air: 'rgba(140, 110, 200, 0.35)',
+	Water: 'rgba(50, 120, 200, 0.35)',
+}
+
+const groupedRivals = computed(() => {
+	const order: RivalElement[] = ['Fire', 'Earth', 'Air', 'Water']
+	return order.map((element) => ({
+		element,
+		rivals: RIVALS.filter((r) => r.element === element),
+	}))
 })
 
 const stageIconCache = ref(new Map<string, { webp: string; png: string }>())
@@ -66,7 +106,6 @@ function select(itemName: string) {
 
 <style scoped>
 .selection-grid {
-	display: grid;
 	gap: 8px;
 	padding: 8px;
 	background: rgba(255, 255, 255, 0.05);
@@ -74,11 +113,24 @@ function select(itemName: string) {
 }
 
 .stage-grid {
-	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 8px;
 }
 
 .character-grid {
-	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.element-group {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 8px;
+	padding: 8px;
+	border-radius: 8px;
+	background-color: var(--element-color);
 }
 
 .selection-option {
