@@ -1,4 +1,6 @@
 <template>
+	<div v-if="!hasAnyMatches" class="matchup-empty overview-empty">No matchups collected yet</div>
+	<template v-else>
 	<div class="charts">
 		<div class="chart">
 			<h1>Character Played</h1>
@@ -10,10 +12,29 @@
 		</div>
 	</div>
 
+	<div class="chart-legend">
+		<div class="legend-items">
+			<div
+				v-for="rival in RIVALS"
+				:key="rival.name"
+				class="legend-item"
+				:title="rival.name"
+			>
+				<span class="legend-swatch" :style="{ backgroundColor: rival.color }">
+					<img class="legend-icon" :src="rival.iconPath" :alt="rival.name" />
+				</span>
+			</div>
+		</div>
+		<p class="legend-note">
+			Outer ring: all games played &middot; Inner ring: ranked games only
+		</p>
+	</div>
+
 	<div class="matchups">
+		<div v-if="!hasMatchupData" class="matchup-empty">Not enough matchups collected</div>
+		<template v-else>
 		<div class="matchup-column">
 			<h2>Best Matchups</h2>
-			<div v-if="bestMatchups.length === 0" class="matchup-empty">No matchups yet</div>
 			<div
 				v-for="cluster in bestMatchups"
 				:key="`best-${cluster.winrate}`"
@@ -41,7 +62,6 @@
 
 		<div class="matchup-column">
 			<h2>Worst Matchups</h2>
-			<div v-if="worstMatchups.length === 0" class="matchup-empty">No matchups yet</div>
 			<div
 				v-for="cluster in worstMatchups"
 				:key="`worst-${cluster.winrate}`"
@@ -66,6 +86,7 @@
 				</span>
 			</div>
 		</div>
+		</template>
 	</div>
 
 	<div class="most-played">
@@ -90,6 +111,7 @@
 			</span>
 		</div>
 	</div>
+	</template>
 </template>
 
 <script setup lang="ts">
@@ -106,9 +128,13 @@ const matchStore = useMatchStore();
 
 const RIVAL_BY_NAME = new Map<RivalName, Rival>(RIVALS.map((rival) => [rival.name, rival]));
 
+/** Minimum rounds a matchup needs before it counts toward best/worst matchups. */
+const MIN_MATCHUP_ROUNDS = 10;
+
 interface CharacterDistribution {
 	labels: string[];
 	data: number[];
+	rankedData: number[];
 	colors: string[];
 }
 
@@ -137,18 +163,24 @@ interface MatchupCluster {
  */
 function buildDistribution(side: 'playerRival' | 'opponentRival'): CharacterDistribution {
 	const counts = new Map<RivalName, number>();
+	const rankedCounts = new Map<RivalName, number>();
 
 	for (const collection of matchStore.getAllMatchCollections) {
+		const isRanked = collection.type === 'ranked';
 		for (const match of collection.matches) {
 			for (const round of match.rounds) {
 				const rival = round[side];
 				counts.set(rival, (counts.get(rival) ?? 0) + 1);
+				if (isRanked) {
+					rankedCounts.set(rival, (rankedCounts.get(rival) ?? 0) + 1);
+				}
 			}
 		}
 	}
 
 	const labels: string[] = [];
 	const data: number[] = [];
+	const rankedData: number[] = [];
 	const colors: string[] = [];
 
 	// Iterate RIVALS to keep a stable order and pull each character's color.
@@ -157,10 +189,11 @@ function buildDistribution(side: 'playerRival' | 'opponentRival'): CharacterDist
 		if (count === 0) continue;
 		labels.push(rival.name);
 		data.push(count);
+		rankedData.push(rankedCounts.get(rival.name) ?? 0);
 		colors.push(rival.color);
 	}
 
-	return { labels, data, colors };
+	return { labels, data, rankedData, colors };
 }
 
 const playerDistribution = computed(() => buildDistribution('playerRival'));
@@ -224,8 +257,10 @@ const matchupClusters = computed<MatchupCluster[]>(() => {
 	const clusters: MatchupCluster[] = [];
 	let current: MatchupCluster | null = null;
 
-	// matchupStats is already sorted by winrate (descending).
+	// matchupStats is already sorted by winrate (descending). Only matchups with
+	// enough rounds played are eligible for the best/worst lists.
 	for (const matchup of matchupStats.value) {
+		if (matchup.played < MIN_MATCHUP_ROUNDS) continue;
 		if (!current || current.winrate !== matchup.winrate) {
 			current = { winrate: matchup.winrate, matchups: [] };
 			clusters.push(current);
@@ -253,6 +288,16 @@ const worstMatchups = computed(() =>
 	matchupClusters.value.slice(-3).reverse(),
 );
 
+/** Whether any matchup meets the minimum-rounds threshold for best/worst lists. */
+const hasMatchupData = computed(() => matchupClusters.value.length > 0);
+
+/** Whether at least one round has been saved across every collection. */
+const hasAnyMatches = computed(() =>
+	matchStore.getAllMatchCollections.some((collection) =>
+		collection.matches.some((match) => match.rounds.length > 0),
+	),
+);
+
 /** The 10 matchups that were played the most, ordered by rounds played. */
 const mostPlayedMatchups = computed<MatchupStat[]>(() =>
 	[...matchupStats.value].sort((a, b) => b.played - a.played).slice(0, 10),
@@ -275,6 +320,25 @@ function toConfig(distribution: CharacterDistribution): ChartConfiguration<'doug
 					borderColor: 'rgba(0, 0, 0, 0)',
 					hoverOffset: 4,
 				},
+				{
+					// Transparent spacer ring that creates a gap between the total
+					// and ranked rings.
+					label: '',
+					data: distribution.data,
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					borderColor: 'rgba(0, 0, 0, 0)',
+					hoverOffset: 0,
+					weight: 0.15,
+				},
+				{
+					label: 'Ranked rounds',
+					data: distribution.rankedData,
+					backgroundColor: distribution.colors,
+					borderColor: 'rgba(0, 0, 0, 0)',
+					hoverOffset: 4,
+					// Draw this dataset as a smaller inner ring.
+					weight: 0.6,
+				},
 			],
 		},
 		options: {
@@ -293,12 +357,22 @@ const enemyCharacterCanvas = ref<HTMLCanvasElement | null>(null);
 let enemyCharacterChart: Chart<'doughnut'> | null = null;
 
 onMounted(() => {
-	if (playerCharacterCanvas.value) {
+	initCharts();
+});
+
+function initCharts() {
+	if (playerCharacterCanvas.value && !playerCharacterChart) {
 		playerCharacterChart = new Chart(playerCharacterCanvas.value, toConfig(playerDistribution.value));
 	}
-	if (enemyCharacterCanvas.value) {
+	if (enemyCharacterCanvas.value && !enemyCharacterChart) {
 		enemyCharacterChart = new Chart(enemyCharacterCanvas.value, toConfig(enemyDistribution.value));
 	}
+}
+
+// The canvases live behind a v-if, so they may only appear once matches exist.
+// Create the charts as soon as the canvas elements are available.
+watch([playerCharacterCanvas, enemyCharacterCanvas], () => {
+	initCharts();
 });
 
 watch(playerDistribution, (distribution) => {
@@ -306,6 +380,9 @@ watch(playerDistribution, (distribution) => {
 	playerCharacterChart.data.labels = distribution.labels;
 	playerCharacterChart.data.datasets[0].data = distribution.data;
 	playerCharacterChart.data.datasets[0].backgroundColor = distribution.colors;
+	playerCharacterChart.data.datasets[1].data = distribution.data;
+	playerCharacterChart.data.datasets[2].data = distribution.rankedData;
+	playerCharacterChart.data.datasets[2].backgroundColor = distribution.colors;
 	playerCharacterChart.update();
 });
 
@@ -314,6 +391,9 @@ watch(enemyDistribution, (distribution) => {
 	enemyCharacterChart.data.labels = distribution.labels;
 	enemyCharacterChart.data.datasets[0].data = distribution.data;
 	enemyCharacterChart.data.datasets[0].backgroundColor = distribution.colors;
+	enemyCharacterChart.data.datasets[1].data = distribution.data;
+	enemyCharacterChart.data.datasets[2].data = distribution.rankedData;
+	enemyCharacterChart.data.datasets[2].backgroundColor = distribution.colors;
 	enemyCharacterChart.update();
 });
 
@@ -337,6 +417,42 @@ onBeforeUnmount(() => {
 	min-width: 280px;
 	max-width: 400px;
 	text-align: center;
+}
+
+.chart-legend {
+	margin: 1.5rem auto 0;
+	max-width: 640px;
+	text-align: center;
+}
+
+.legend-items {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	justify-content: center;
+}
+
+.legend-swatch {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.legend-icon {
+	width: 16px;
+	height: 16px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.legend-note {
+	margin-top: 0.75rem;
+	opacity: 0.7;
+	font-size: 0.9rem;
 }
 
 .matchups {
