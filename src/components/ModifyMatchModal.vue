@@ -1,10 +1,10 @@
 <template>
 	<BaseModal :show="props.display" @close="handleClose">
 		<template v-slot:header>
-			<h3>Modify Match</h3>
+			<h3>Modify Match against {{ originalMatch?.opponentName }}</h3>
 		</template>
 		<template v-slot:body>
-			<div class="modify-match-content">
+			<div class="modify-match-content" ref="contentRef">
 				<div class="match-details-section">
 					<h4>Match Details</h4>
 
@@ -312,6 +312,18 @@ const modifiedMatch = ref<Match | RankedMatch>({
 })
 
 const hasAttemptedSave = ref<boolean>(false)
+
+// Root of the modal body content, used to scroll the modal on open
+const contentRef = ref<HTMLElement | null>(null)
+
+// Scroll the modal body to the bottom whenever the modal is opened
+watch(() => props.display, (show) => {
+	if (!show) return
+	nextTick(() => {
+		const body = contentRef.value?.closest('.modal-body') as HTMLElement | null
+		if (body) body.scrollTop = body.scrollHeight
+	})
+})
 
 // Check if current collection is ranked
 const isRankedCollection = computed(() => {
