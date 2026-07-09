@@ -82,6 +82,26 @@ export interface Round {
 }
 
 /**
+ * Represents a single friendly game (exactly one round) played against a named opponent.
+ *
+ * Friendly collections store a flat, chronological list of these instead of grouping
+ * rounds into best-of matches. Each game is independently identifiable and editable.
+ *
+ * @property {string} uuid - Unique identifier for the game.
+ * @property {string} createdAt - ISO date string for when the game was played/created.
+ * @property {string} updatedAt - ISO date string for when the game was last updated.
+ * @property {string} opponentName - Name of the opponent for this game.
+ * @property {{ text: string; link: string }[]} links - Optional links related to the game.
+ */
+export interface FriendlyGame extends Round {
+	uuid: string
+	createdAt: string
+	updatedAt: string
+	opponentName: string
+	links: { text: string; link: string }[]
+}
+
+/**
  * Represents a match in Rivals of Aether 2.
  *
  * @property {string} uuid - Unique identifier for the match.
@@ -147,7 +167,21 @@ export interface RankedMatchCollection extends Omit<MatchCollection, 'type' | 'm
 	matches: RankedMatch[]
 }
 
-export type AnyMatchCollection = MatchCollection | RankedMatchCollection
+/**
+ * Represents a friendly match collection in Rivals of Aether 2.
+ *
+ * Unlike other collection types, friendly collections do not group rounds into
+ * best-of matches. They store a flat, chronological list of individual games.
+ * @extends MatchCollection
+ * @property {'friendly'} type - The type of the match collection, which is 'friendly'.
+ * @property {FriendlyGame[]} games - A flat list of individual games.
+ */
+export interface FriendlyMatchCollection extends Omit<MatchCollection, 'type' | 'matches'> {
+	type: 'friendly'
+	games: FriendlyGame[]
+}
+
+export type AnyMatchCollection = MatchCollection | RankedMatchCollection | FriendlyMatchCollection
 
 export type MatchResult = 'wins' | 'losses'
 export type DifficultyLevel = 'easy' | 'equal' | 'hard' | 'unknown'

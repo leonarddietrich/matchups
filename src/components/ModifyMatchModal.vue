@@ -162,6 +162,7 @@
 					</div>
 
 					<button
+						v-if="!isFriendly"
 						@click="addRound"
 						:disabled="modifiedMatch.rounds.length >= maxRoundsAllowed || isMatchDecided"
 						class="u-btn u-btn--secondary u-pill btn-add-round"
@@ -250,7 +251,8 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import BaseModal from './BaseModal.vue'
 import SingleSelection from './SingleSelection.vue'
-import type { Round, StageName, RivalName, Match, RankedMatch } from '@/types/roa2Types'
+import type { Round, StageName, RivalName, Match, RankedMatch, FriendlyMatchCollection } from '@/types/roa2Types'
+import { isFriendlyCollection, matchToFriendlyGame, getCollectionMatches } from '@/scripts/roa2'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 
@@ -334,6 +336,15 @@ const isRankedCollection = computed(() => {
 	return currentCollection?.type === 'ranked'
 })
 
+// Check if current collection is friendly (flat, single-game entries)
+const isFriendly = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	return currentCollection?.type === 'friendly'
+})
+
 // Get maximum rounds allowed for current collection type
 const maxRoundsAllowed = computed(() => {
 	const collectionName = selectionStore.getSelectedMatchCollectionName
@@ -362,7 +373,7 @@ const opponentSuggestions = computed(() => {
 	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) return []
 
-	return currentCollection.matches
+	return getCollectionMatches(currentCollection)
 		.map(match => match.opponentName)
 		.filter((name, index, self) => name && self.indexOf(name) === index)
 		.sort()
@@ -507,6 +518,30 @@ function saveMatch() {
 		return
 	}
 
+	// Friendly collections store a flat list of single-round games
+	if (isFriendlyCollection(currentCollection)) {
+		const now = new Date().toISOString()
+		const game = matchToFriendlyGame({
+			...modifiedMatch.value,
+			updatedAt: now,
+			links: modifiedMatch.value.links.filter(link => link.text.trim() !== '' || link.link.trim() !== ''),
+		} as Match)
+
+		const updatedGames = currentCollection.games.map((g) => g.uuid === game.uuid ? game : g)
+		const updatedCollection: FriendlyMatchCollection = {
+			...currentCollection,
+			games: updatedGames,
+			updatedAt: now,
+		}
+
+		matchStore.updateMatchCollection(updatedCollection)
+		console.log('Friendly game updated:', game)
+		removeDraft(game.uuid)
+		emit('closeModifyMatchModal')
+		resetForm()
+		return
+	}
+
 	// Filter out empty links and create the appropriate match type
 	const finalMatch = isRankedCollection.value
 		? {
@@ -566,6 +601,22 @@ function deleteMatch() {
 	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) {
 		alert('Selected match collection not found.')
+		return
+	}
+
+	// Friendly collections store a flat list of single-round games
+	if (isFriendlyCollection(currentCollection)) {
+		const updatedGames = currentCollection.games.filter((g) => g.uuid !== props.match!.uuid)
+		const updatedCollection: FriendlyMatchCollection = {
+			...currentCollection,
+			games: updatedGames,
+			updatedAt: new Date().toISOString(),
+		}
+		matchStore.updateMatchCollection(updatedCollection)
+		console.log('Friendly game deleted:', props.match.uuid)
+		removeDraft(props.match.uuid)
+		emit('closeModifyMatchModal')
+		resetForm()
 		return
 	}
 

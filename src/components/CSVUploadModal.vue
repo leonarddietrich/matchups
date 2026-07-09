@@ -115,11 +115,13 @@ import type {
 	RivalName,
 	StageName,
 	MatchCollection,
+	AnyMatchCollection,
 } from '@/types/roa2Types'
 import { CSV_MATCH_MAPPING } from '@/constants'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match'
+import { transformMatchCollectionWithOutdatedVersion } from '@/scripts/roa2'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
@@ -358,13 +360,22 @@ function buildAndSaveCollection() {
 		return
 	}
 
+	// Friendly collections are stored as a flat list of games; reuse the migration
+	// to flatten the freshly built matches into games.
+	let finalCollection: AnyMatchCollection = matchCollection
+	if (matchCollection.type === 'friendly') {
+		const legacy = { ...matchCollection, version: 2 } as unknown as AnyMatchCollection
+		transformMatchCollectionWithOutdatedVersion(legacy)
+		finalCollection = legacy
+	}
+
 	// Add the collection to the store
-	matchStore.addMatchCollection(matchCollection)
+	matchStore.addMatchCollection(finalCollection)
 	console.log('Match collection saved.')
 
 	// Automatically select the new match collection
-	selectionStore.setMatchCollectionName(matchCollection.name)
-	console.log('New match collection automatically selected:', matchCollection.name)
+	selectionStore.setMatchCollectionName(finalCollection.name)
+	console.log('New match collection automatically selected:', finalCollection.name)
 
 	// Reset form after successful save
 	resetForm()

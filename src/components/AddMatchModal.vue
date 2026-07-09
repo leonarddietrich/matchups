@@ -46,6 +46,20 @@
 							<option v-for="name in opponentSuggestions" :key="name" :value="name"></option>
 						</datalist>
 					</div>
+
+					<div v-if="recentOpponents.length" class="recent-opponents">
+						<span class="recent-label">Recent:</span>
+						<button
+							v-for="name in recentOpponents"
+							:key="name"
+							type="button"
+							class="opponent-chip"
+							:class="{ selected: opponentName.trim() === name }"
+							@click="opponentName = name"
+						>
+							{{ name }}
+						</button>
+					</div>
 				</div>
 
 				<div class="rounds-section">
@@ -124,6 +138,7 @@
 						</div>
 					</div>
 					<button
+						v-if="!isFriendly"
 						@click="addRound"
 						class="u-btn u-btn--secondary u-pill btn-add-round"
 						:disabled="rounds.length >= maxRoundsAllowed || isMatchDecided"
@@ -202,8 +217,9 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import BaseModal from './BaseModal.vue'
 import SingleSelection from './SingleSelection.vue'
-import type { Round, Match, RankedMatch, StageName, RivalName } from '@/types/roa2Types'
+import type { Round, Match, RankedMatch, StageName, RivalName, FriendlyGame, FriendlyMatchCollection } from '@/types/roa2Types'
 import { STAGES } from '@/constants/roa2'
+import { isFriendlyCollection, getCollectionMatches } from '@/scripts/roa2'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 
@@ -235,6 +251,15 @@ const isRankedCollection = computed(() => {
 	return currentCollection?.type === 'ranked'
 })
 
+// Check if current collection is friendly (flat, single-game entries)
+const isFriendly = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return false
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	return currentCollection?.type === 'friendly'
+})
+
 // Get maximum rounds allowed for current collection type
 const maxRoundsAllowed = computed(() => {
 	const collectionName = selectionStore.getSelectedMatchCollectionName
@@ -263,10 +288,35 @@ const opponentSuggestions = computed(() => {
 	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) return []
 
-	return currentCollection.matches
+	return getCollectionMatches(currentCollection)
 		.map(match => match.opponentName)
 		.filter((name, index, self) => name && self.indexOf(name) === index)
 		.sort()
+})
+
+// Up to 10 most recently played opponents, for quick selection
+const recentOpponents = computed<string[]>(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return []
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	if (!currentCollection) return []
+
+	const matchesByRecency = getCollectionMatches(currentCollection)
+		.slice()
+		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+	const seen = new Set<string>()
+	const result: string[] = []
+	for (const match of matchesByRecency) {
+		const name = match.opponentName?.trim()
+		if (name && !seen.has(name)) {
+			seen.add(name)
+			result.push(name)
+			if (result.length >= 10) break
+		}
+	}
+	return result
 })
 
 // Number of round wins required to decide the match (best-of 3|5)
@@ -308,7 +358,7 @@ const currentCollectionRounds = computed<Round[]>(() => {
 	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) return []
 
-	return currentCollection.matches.flatMap(match => match.rounds)
+	return getCollectionMatches(currentCollection).flatMap(match => match.rounds)
 })
 
 /**
@@ -394,6 +444,34 @@ function persistCurrentMatch(): boolean {
 	if (!currentCollection) {
 		alert('Selected match collection not found.')
 		return false
+	}
+
+	const now = new Date().toISOString()
+
+	// Friendly collections store a flat list of single-round games
+	if (isFriendlyCollection(currentCollection)) {
+		const round = rounds.value[0]
+		const newGame: FriendlyGame = {
+			uuid: crypto.randomUUID(),
+			createdAt: now,
+			updatedAt: now,
+			opponentName: opponentName.value.trim(),
+			stage: round.stage,
+			playerRival: round.playerRival,
+			opponentRival: round.opponentRival,
+			won: round.won,
+			links: links.value.filter(link => link.text.trim() !== '' || link.link.trim() !== ''),
+		}
+
+		const updatedCollection: FriendlyMatchCollection = {
+			...currentCollection,
+			games: [...currentCollection.games, newGame],
+			updatedAt: now,
+		}
+
+		matchStore.updateMatchCollection(updatedCollection)
+		console.log('New friendly game added:', newGame)
+		return true
 	}
 
 	const newMatch: Match | RankedMatch = isRankedCollection.value
@@ -561,6 +639,43 @@ onMounted(loadDraft)
 	color: #94a3b8;
 	margin-top: 0.25rem;
 	display: block;
+}
+
+.recent-opponents {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4rem;
+	margin-top: 0.5rem;
+}
+
+.recent-label {
+	font-size: 0.8rem;
+	color: #94a3b8;
+	margin-right: 0.15rem;
+}
+
+.opponent-chip {
+	padding: 0.25rem 0.6rem;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 999px;
+	background-color: rgba(255, 255, 255, 0.06);
+	color: #fff;
+	font-size: 0.8rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.opponent-chip:hover {
+	border-color: rgba(66, 185, 131, 0.6);
+	background-color: rgba(66, 185, 131, 0.12);
+}
+
+.opponent-chip.selected {
+	border-color: #42b983;
+	background-color: rgba(66, 185, 131, 0.25);
+	color: #42b983;
+	font-weight: bold;
 }
 
 .round-item,

@@ -88,6 +88,7 @@ import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import type { RivalName, Round, MatchType, Match, RankedMatch, StagePerformance } from '@/types/roa2Types'
 import { STAGES } from '@/constants'
+import { getCollectionMatches } from '@/scripts/roa2'
 
 const filterByPlayer = ref(true)
 
@@ -110,15 +111,15 @@ const sourceRounds = computed<Round[]>(() => {
     if (mode === 'current') {
         const col = selectedCollection.value
         if (!col) return []
-        return col.matches.flatMap((m: Match | RankedMatch) => m.rounds)
+        return getCollectionMatches(col).flatMap((m: Match | RankedMatch) => m.rounds)
     }
     if (mode === 'all') {
-        return allCollections.value.flatMap(c => c.matches).flatMap((m: Match | RankedMatch) => m.rounds)
+        return allCollections.value.flatMap(c => getCollectionMatches(c)).flatMap((m: Match | RankedMatch) => m.rounds)
     }
     if (mode === 'byType') {
         return allCollections.value
             .filter(c => c.type === selectedType.value)
-            .flatMap(c => c.matches)
+            .flatMap(c => getCollectionMatches(c))
             .flatMap((m: Match | RankedMatch) => m.rounds)
     }
     // byPlayer (opponent name)
@@ -126,7 +127,7 @@ const sourceRounds = computed<Round[]>(() => {
 	if (!queryRaw) return []
 	const query = queryRaw.toLowerCase()
     return allCollections.value
-        .flatMap(c => c.matches)
+        .flatMap(c => getCollectionMatches(c))
 		.filter((m: Match | RankedMatch) => m.opponentName.trim().toLowerCase() === query)
         .flatMap((m: Match | RankedMatch) => m.rounds)
 })
@@ -162,7 +163,7 @@ const totalWinRate = computed(() => totalRoundsPlayed.value > 0 ? (totalRoundsWo
 const opponentNameOptions = computed<string[]>(() => {
 	const names = new Set<string>()
 	allCollections.value.forEach(c => {
-		c.matches.forEach((m: Match | RankedMatch) => {
+		getCollectionMatches(c).forEach((m: Match | RankedMatch) => {
 			if (m.opponentName && typeof m.opponentName === 'string') {
 				names.add(m.opponentName.trim())
 			}

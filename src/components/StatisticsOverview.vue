@@ -104,6 +104,7 @@ import { useMatchStore } from '@/stores/matchStore';
 import { RIVALS, STAGES } from '@/constants';
 import type { Rival, RivalName, Stage, StageName } from '@/types/roa2Types';
 import { getWinrateColor } from '@/scripts/utils';
+import { getCollectionMatches } from '@/scripts/roa2';
 import MatchupPair from '@/components/MatchupPair.vue';
 
 Chart.register(...registerables);
@@ -155,7 +156,7 @@ function buildDistribution(side: 'playerRival' | 'opponentRival'): CharacterDist
 
 	for (const collection of matchStore.getAllMatchCollections) {
 		const isRanked = collection.type === 'ranked';
-		for (const match of collection.matches) {
+		for (const match of getCollectionMatches(collection)) {
 			for (const round of match.rounds) {
 				const rival = round[side];
 				counts.set(rival, (counts.get(rival) ?? 0) + 1);
@@ -194,7 +195,7 @@ const enemyDistribution = computed(() => buildDistribution('opponentRival'));
 const playerCharacterUsage = computed<Map<RivalName, number>>(() => {
 	const counts = new Map<RivalName, number>();
 	for (const collection of matchStore.getAllMatchCollections) {
-		for (const match of collection.matches) {
+		for (const match of getCollectionMatches(collection)) {
 			for (const round of match.rounds) {
 				counts.set(round.playerRival, (counts.get(round.playerRival) ?? 0) + 1);
 			}
@@ -220,7 +221,7 @@ const matchupStats = computed<MatchupStat[]>(() => {
 	>();
 
 	for (const collection of matchStore.getAllMatchCollections) {
-		for (const match of collection.matches) {
+		for (const match of getCollectionMatches(collection)) {
 			for (const round of match.rounds) {
 				const player = RIVAL_BY_NAME.get(round.playerRival);
 				const opponent = RIVAL_BY_NAME.get(round.opponentRival);
@@ -317,7 +318,7 @@ const hasMatchupData = computed(() => matchupClusters.value.length > 0);
 /** Whether at least one round has been saved across every collection. */
 const hasAnyMatches = computed(() =>
 	matchStore.getAllMatchCollections.some((collection) =>
-		collection.matches.some((match) => match.rounds.length > 0),
+		getCollectionMatches(collection).some((match) => match.rounds.length > 0),
 	),
 );
 

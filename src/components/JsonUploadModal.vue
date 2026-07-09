@@ -19,7 +19,7 @@
 						<p><strong>Name:</strong> {{ jsonData.name }}</p>
 						<p><strong>Type:</strong> {{ jsonData.type }}</p>
 						<p><strong>Description:</strong> {{ jsonData.description }}</p>
-						<p><strong>Matches:</strong> {{ jsonData.matches?.length || 0 }}</p>
+						<p><strong>Matches:</strong> {{ previewMatchCount }}</p>
 						<p><strong>Created:</strong> {{ formatDate(jsonData.createdAt) }}</p>
 						<p><strong>Updated:</strong> {{ formatDate(jsonData.updatedAt) }}</p>
 					</div>
@@ -98,14 +98,26 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import BaseModal from './BaseModal.vue'
-import type { AnyMatchCollection, Match, RankedMatch } from '@/types/roa2Types'
+import type { AnyMatchCollection, Match, RankedMatch, FriendlyGame } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { CURRENT_MATCH_DATA_VERSION, MATCH_TYPES } from '@/constants/match'
-import { transformMatchCollectionWithOutdatedVersion } from '@/scripts/roa2'
+import { transformMatchCollectionWithOutdatedVersion, friendlyGameToMatch, matchToFriendlyGame, isFriendlyCollection, getCollectionMatches } from '@/scripts/roa2'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
+
+// Reads a collection's matches regardless of version/shape (friendly games are adapted).
+function collectionMatchesLoose(c: AnyMatchCollection | null | undefined): (Match | RankedMatch)[] {
+	if (!c) return []
+	const raw = c as unknown as { matches?: unknown; games?: unknown }
+	if (Array.isArray(raw.matches)) return raw.matches as (Match | RankedMatch)[]
+	if (Array.isArray(raw.games)) return (raw.games as FriendlyGame[]).map(friendlyGameToMatch)
+	return []
+}
+
+// Number of matches/games in the imported file, for the preview panel.
+const previewMatchCount = computed(() => collectionMatchesLoose(jsonData.value).length)
 
 const emit = defineEmits(['closeJsonUploadModal'])
 
@@ -158,10 +170,10 @@ const conflictInfo = computed(() => {
 
 		if (targetCollection) {
 			// Create a map of existing matches by ID for quick lookup
-			const existingMatchesById = new Map(targetCollection.matches.map(m => [m.uuid, m]))
+			const existingMatchesById = new Map(collectionMatchesLoose(targetCollection).map(m => [m.uuid, m]))
 
 			// Check each new match for conflicts
-			for (const newMatch of jsonData.value!.matches) {
+			for (const newMatch of collectionMatchesLoose(jsonData.value!)) {
 				const existingMatch = existingMatchesById.get(newMatch.uuid)
 				if (existingMatch) {
 					// Match ID exists, check if they are identical
@@ -176,10 +188,11 @@ const conflictInfo = computed(() => {
 	}
 
 	if (nameExists || matchIdConflicts.length > 0) {
+		const importedIsFriendly = jsonData.value!.type === 'friendly'
 		return {
 			nameExists,
 			matchIdConflicts,
-			canMerge: matchIdConflicts.length === 0
+			canMerge: matchIdConflicts.length === 0 && !importedIsFriendly
 		}
 	}
 
@@ -255,8 +268,8 @@ function validateJsonData(data: unknown) {
 	if (!obj.updatedAt || typeof obj.updatedAt !== 'string') {
 		validationErrors.value.push('Missing required field: updatedAt')
 	}
-	if (!Array.isArray(obj.matches)) {
-		validationErrors.value.push('Invalid matches format (must be array)')
+	if (!Array.isArray(obj.matches) && !Array.isArray(obj.games)) {
+		validationErrors.value.push('Invalid collection format (must contain a matches or games array)')
 	}
 
 	// Validate type
@@ -339,15 +352,31 @@ function importCollection() {
 			break
 
 		case 'merge':
-			// Merge matches into existing collection (preserving original match IDs)
+			// Merge into existing collection (preserving original identifiers)
 			const targetCollection = matchStore.getMatchCollectionByName(collection.name)
 			if (targetCollection) {
+				if (isFriendlyCollection(targetCollection)) {
+					// Merge friendly games by uuid
+					const existingGamesById = new Map(targetCollection.games.map(g => [g.uuid, g]))
+					const gamesToAdd = getCollectionMatches(collection)
+						.map(matchToFriendlyGame)
+						.filter(game => !existingGamesById.has(game.uuid))
+
+					const updatedCollection = {
+						...targetCollection,
+						games: [...targetCollection.games, ...gamesToAdd],
+						updatedAt: new Date().toISOString()
+					}
+					matchStore.updateMatchCollection(updatedCollection)
+					break
+				}
+
 				// Create a map of existing matches by ID for intelligent merging
 				const existingMatchesById = new Map(targetCollection.matches.map(m => [m.uuid, m]))
 				const matchesToAdd = []
 
 				// Check each new match
-				for (const newMatch of collection.matches) {
+				for (const newMatch of getCollectionMatches(collection)) {
 					const existingMatch = existingMatchesById.get(newMatch.uuid)
 					if (existingMatch) {
 						// Match ID exists, check if they are identical

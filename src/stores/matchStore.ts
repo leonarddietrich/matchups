@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { AnyMatchCollection, Match, RankedMatch } from '../types/roa2Types'
 import { LOCAL_STORAGE_KEYS } from '@/constants'
 import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match'
-import { transformMatchCollectionWithOutdatedVersion } from '@/scripts/roa2'
+import { transformMatchCollectionWithOutdatedVersion, matchToFriendlyGame, isFriendlyCollection } from '@/scripts/roa2'
 
 export const useMatchStore = defineStore('matchStore', {
 	state: () => ({
@@ -148,6 +148,16 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection '${collectionName}' is read-only and cannot be modified.`)
 				return
 			}
+			if (isFriendlyCollection(collection)) {
+				const gameIndex = collection.games.findIndex((game) => game.uuid === matchId)
+				if (gameIndex === -1) {
+					console.warn(`Game with id ${matchId} does not exist in collection ${collectionName}.`)
+					return
+				}
+				collection.games.splice(gameIndex, 1)
+				this.saveMatchCollectionToStorage(collection)
+				return
+			}
 			const matchIndex = collection.matches.findIndex((match) => match.uuid === matchId)
 			if (matchIndex === -1) {
 				console.warn(`Match with id ${matchId} does not exist in collection ${collectionName}.`)
@@ -172,6 +182,17 @@ export const useMatchStore = defineStore('matchStore', {
 				console.warn(`Match collection '${collectionName}' is read-only and cannot be modified.`)
 				return
 			}
+			if (isFriendlyCollection(collection)) {
+				const game = matchToFriendlyGame(match)
+				const gameIndex = collection.games.findIndex((g) => g.uuid === game.uuid)
+				if (gameIndex === -1) {
+					console.warn(`Game with id ${game.uuid} does not exist in collection ${collectionName}.`)
+					return
+				}
+				collection.games[gameIndex] = game
+				this.saveMatchCollectionToStorage(collection)
+				return
+			}
 			const matchIndex = collection.matches.findIndex((m: Match | RankedMatch) => m.uuid === match.uuid)
 			if (matchIndex === -1) {
 				console.warn(`Match with id ${match.uuid} does not exist in collection ${collectionName}.`)
@@ -194,6 +215,16 @@ export const useMatchStore = defineStore('matchStore', {
 			}
 			if (collection.readOnly) {
 				console.warn(`Match collection '${collectionName}' is read-only and cannot be modified.`)
+				return
+			}
+			if (isFriendlyCollection(collection)) {
+				const game = matchToFriendlyGame(match)
+				if (collection.games.some((g) => g.uuid === game.uuid)) {
+					console.warn(`Game with id ${game.uuid} already exists in collection ${collectionName}.`)
+					return
+				}
+				collection.games.push(game)
+				this.saveMatchCollectionToStorage(collection)
 				return
 			}
 			if (collection.matches.some((m: Match | RankedMatch) => m.uuid === match.uuid)) {

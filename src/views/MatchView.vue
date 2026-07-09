@@ -13,7 +13,7 @@
 			</div>
 			<div class="detail-item">
 				<span class="detail-label">Match count:</span>
-				<span class="detail-value">{{ matchCollection.matches.length }}</span>
+				<span class="detail-value">{{ collectionMatches.length }}</span>
 			</div>
 			<div class="detail-item">
 				<span class="detail-label">Created at:</span>
@@ -77,6 +77,7 @@ import { useSelectionStore } from '@/stores/selectionStore'
 import type { AnyMatchCollection, MatchFilters as MatchFiltersType, Match } from '@/types/roa2Types'
 import { filterMatches } from '@/scripts/matchFilters'
 import { formatDate } from '@/scripts/utils'
+import { getCollectionMatches } from '@/scripts/roa2'
 
 const showAddMatchModal = ref(false)
 const showModifyModal = ref(false)
@@ -94,12 +95,16 @@ const matchCollection = computed<AnyMatchCollection | null>(() => {
 	return matchStore.getMatchCollectionByName(name)
 })
 
+const collectionMatches = computed(() => {
+	return matchCollection.value ? getCollectionMatches(matchCollection.value) : []
+})
+
 const filteredMatches = computed(() => {
 	if (!matchCollection.value) {
 		return []
 	}
 
-	const sortedMatches = sortMatchesByDate(matchCollection.value.matches, false)
+	const sortedMatches = sortMatchesByDate(collectionMatches.value, false)
 
 	const filters = selectionStore.getCurrentFilters
 	// If no filters are active, return all matches

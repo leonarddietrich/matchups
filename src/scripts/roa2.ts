@@ -3,7 +3,7 @@
  */
 
 import type { Rival, Stage, RivalName, StageName, Match,
-	RankedMatch, AnyMatchCollection } from '@/types/roa2Types'
+	RankedMatch, AnyMatchCollection, FriendlyGame, FriendlyMatchCollection } from '@/types/roa2Types'
 import { ImageFormat } from '@/types/shared/media'
 import { RIVALS, STAGES } from '@/constants/roa2';
 import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match';
@@ -88,20 +88,62 @@ export function transformMatchCollectionWithOutdatedVersion(collection: AnyMatch
 		delete ((collection as unknown) as Record<string, unknown>).id
 		collection.uuid = collection.uuid || crypto.randomUUID()
 		collection.version = 1
-		transformMatchesToVersion1(collection.matches, collection.type === 'ranked')
+		transformMatchesToVersion1((collection as unknown as { matches: (Match | RankedMatch)[] }).matches ?? [], collection.type === 'ranked')
 		console.info('Transformed collection:', collection)
 	}
 	if (oldVersion < 2) {
 		console.info(`Transforming match collection '${collection.name}' from version ${oldVersion} to 2`)
 		transformMatchesFromVersion1ToVersion2(collection)
 	}
+	if (oldVersion < 3) {
+		console.info(`Transforming match collection '${collection.name}' from version ${oldVersion} to 3`)
+		transformFriendlyCollectionToVersion3(collection)
+	}
+}
+
+/**
+ * Version 3 flattens friendly collections from grouped best-of `matches` into a flat
+ * chronological list of single-round `games`. Non-friendly collections are unchanged
+ * apart from the version bump.
+ */
+function transformFriendlyCollectionToVersion3(collection: AnyMatchCollection) {
+	if (collection.type === 'friendly') {
+		const raw = collection as unknown as Record<string, unknown>
+		const oldMatches = (Array.isArray(raw.matches) ? raw.matches : []) as Match[]
+		const games: FriendlyGame[] = []
+
+		for (const match of oldMatches) {
+			const rounds = Array.isArray(match.rounds) ? match.rounds : []
+			const createdAt = match.createdAt ?? new Date().toISOString()
+			const updatedAt = match.updatedAt ?? createdAt
+			rounds.forEach((round, index) => {
+				games.push({
+					// Preserve the original uuid for single-round matches so existing references stay valid
+					uuid: rounds.length === 1 && match.uuid ? match.uuid : crypto.randomUUID(),
+					createdAt,
+					updatedAt,
+					opponentName: match.opponentName ?? '',
+					stage: round.stage,
+					playerRival: round.playerRival,
+					opponentRival: round.opponentRival,
+					won: round.won,
+					links: index === 0 && Array.isArray(match.links) ? match.links : [],
+				})
+			})
+		}
+
+		raw.games = games
+		delete raw.matches
+	}
+	collection.version = CURRENT_MATCH_DATA_VERSION
+	console.info(`Successfully migrated collection '${collection.name}' to version 3.`)
 }
 
 function transformMatchesFromVersion1ToVersion2(collection: AnyMatchCollection) {
 	if (!collection.hasOwnProperty('readOnly')) {
 		(collection as unknown as Record<string, unknown>).readOnly = false
 	}
-	collection.version = CURRENT_MATCH_DATA_VERSION
+	collection.version = 2
 	console.info(`Successfully migrated collection '${collection.name}' to version 2. readOnly: ${(collection as unknown as Record<string, unknown>).readOnly}`)
 }
 
@@ -133,3 +175,65 @@ function transformMatchesToVersion1(matches: (Match | RankedMatch)[], isRanked: 
 		}
 	}
 }
+
+/**
+ * Type guard: whether a collection is a flat friendly collection (uses `games`).
+ */
+export function isFriendlyCollection(collection: AnyMatchCollection): collection is FriendlyMatchCollection {
+	return collection.type === 'friendly'
+}
+
+/**
+ * Adapts a single friendly game into an equivalent single-round Match, so that
+ * existing match/round based code (filters, statistics, insight, display) can
+ * consume friendly collections without special-casing.
+ */
+export function friendlyGameToMatch(game: FriendlyGame): Match {
+	return {
+		uuid: game.uuid,
+		createdAt: game.createdAt,
+		updatedAt: game.updatedAt,
+		opponentName: game.opponentName,
+		rounds: [
+			{
+				stage: game.stage,
+				playerRival: game.playerRival,
+				opponentRival: game.opponentRival,
+				won: game.won,
+			},
+		],
+		links: game.links ?? [],
+	}
+}
+
+/**
+ * Converts a single-round Match back into a friendly game. Used when saving
+ * edits made through the shared match/round based modals.
+ */
+export function matchToFriendlyGame(match: Match): FriendlyGame {
+	const round = match.rounds[0]
+	return {
+		uuid: match.uuid,
+		createdAt: match.createdAt,
+		updatedAt: match.updatedAt,
+		opponentName: match.opponentName,
+		stage: round.stage,
+		playerRival: round.playerRival,
+		opponentRival: round.opponentRival,
+		won: round.won,
+		links: match.links ?? [],
+	}
+}
+
+/**
+ * Returns the collection's contents as a Match[] view. Friendly collections have
+ * their flat games adapted to single-round matches; other collections return their
+ * matches directly.
+ */
+export function getCollectionMatches(collection: AnyMatchCollection): Match[] {
+	if (isFriendlyCollection(collection)) {
+		return collection.games.map(friendlyGameToMatch)
+	}
+	return collection.matches
+}
+
