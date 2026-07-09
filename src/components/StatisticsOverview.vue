@@ -41,18 +41,13 @@
 				class="matchup-row"
 			>
 				<div class="matchup-pairs">
-					<div
+					<MatchupPair
 						v-for="matchup in cluster.matchups"
 						:key="`${matchup.player.name}-${matchup.opponent.name}`"
-						class="matchup-pair"
-					>
-						<img class="matchup-icon" :src="matchup.player.iconPath" :alt="matchup.player.name" />
-						<img
-							class="matchup-icon opponent"
-							:src="matchup.opponent.iconPath"
-							:alt="matchup.opponent.name"
-						/>
-					</div>
+						:player="matchup.player"
+						:opponent="matchup.opponent"
+						:stages="matchup.bestStages"
+					/>
 				</div>
 				<span class="matchup-winrate" :style="{ color: getWinrateColor(cluster.winrate) }">
 					{{ formatWinrate(cluster.winrate) }}
@@ -68,18 +63,13 @@
 				class="matchup-row"
 			>
 				<div class="matchup-pairs">
-					<div
+					<MatchupPair
 						v-for="matchup in cluster.matchups"
 						:key="`${matchup.player.name}-${matchup.opponent.name}`"
-						class="matchup-pair"
-					>
-						<img class="matchup-icon" :src="matchup.player.iconPath" :alt="matchup.player.name" />
-						<img
-							class="matchup-icon opponent"
-							:src="matchup.opponent.iconPath"
-							:alt="matchup.opponent.name"
-						/>
-					</div>
+						:player="matchup.player"
+						:opponent="matchup.opponent"
+						:stages="matchup.worstStages"
+					/>
 				</div>
 				<span class="matchup-winrate" :style="{ color: getWinrateColor(cluster.winrate) }">
 					{{ formatWinrate(cluster.winrate) }}
@@ -97,14 +87,7 @@
 			:key="`most-${matchup.player.name}-${matchup.opponent.name}`"
 			class="matchup-row"
 		>
-			<div class="matchup-pair">
-				<img class="matchup-icon" :src="matchup.player.iconPath" :alt="matchup.player.name" />
-				<img
-					class="matchup-icon opponent"
-					:src="matchup.opponent.iconPath"
-					:alt="matchup.opponent.name"
-				/>
-			</div>
+			<MatchupPair :player="matchup.player" :opponent="matchup.opponent" />
 			<span class="matchup-played">{{ matchup.played }} rounds</span>
 			<span class="matchup-winrate" :style="{ color: getWinrateColor(matchup.winrate) }">
 				{{ formatWinrate(matchup.winrate) }}
@@ -118,9 +101,10 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { Chart, type ChartConfiguration, registerables } from 'chart.js';
 import { useMatchStore } from '@/stores/matchStore';
-import { RIVALS } from '@/constants';
-import type { Rival, RivalName } from '@/types/roa2Types';
+import { RIVALS, STAGES } from '@/constants';
+import type { Rival, RivalName, Stage, StageName } from '@/types/roa2Types';
 import { getWinrateColor } from '@/scripts/utils';
+import MatchupPair from '@/components/MatchupPair.vue';
 
 Chart.register(...registerables);
 
@@ -147,6 +131,10 @@ interface MatchupStat {
 	opponent: Rival;
 	played: number;
 	winrate: number;
+	// Stage(s) with the highest / lowest winrate within this matchup. Ties keep
+	// every stage that shares the extreme winrate.
+	bestStages: Stage[];
+	worstStages: Stage[];
 }
 
 /**
@@ -220,7 +208,16 @@ const playerCharacterUsage = computed<Map<RivalName, number>>(() => {
  * winrate for each, sorted from best to worst.
  */
 const matchupStats = computed<MatchupStat[]>(() => {
-	const grouped = new Map<string, { player: Rival; opponent: Rival; wins: number; played: number }>();
+	const grouped = new Map<
+		string,
+		{
+			player: Rival;
+			opponent: Rival;
+			wins: number;
+			played: number;
+			stages: Map<StageName, { wins: number; played: number }>;
+		}
+	>();
 
 	for (const collection of matchStore.getAllMatchCollections) {
 		for (const match of collection.matches) {
@@ -230,21 +227,47 @@ const matchupStats = computed<MatchupStat[]>(() => {
 				if (!player || !opponent) continue;
 
 				const key = `${player.name}__${opponent.name}`;
-				const agg = grouped.get(key) ?? { player, opponent, wins: 0, played: 0 };
+				const agg = grouped.get(key) ?? {
+					player,
+					opponent,
+					wins: 0,
+					played: 0,
+					stages: new Map<StageName, { wins: number; played: number }>(),
+				};
 				agg.played += 1;
 				if (round.won) agg.wins += 1;
+
+				const stage = agg.stages.get(round.stage) ?? { wins: 0, played: 0 };
+				stage.played += 1;
+				if (round.won) stage.wins += 1;
+				agg.stages.set(round.stage, stage);
+
 				grouped.set(key, agg);
 			}
 		}
 	}
 
 	return Array.from(grouped.values())
-		.map((agg) => ({
-			player: agg.player,
-			opponent: agg.opponent,
-			played: agg.played,
-			winrate: agg.wins / agg.played,
-		}))
+		.map((agg) => {
+			// Winrate per stage, ordered by the canonical STAGES order for stable
+			// rendering of the split stage backgrounds.
+			const stageWinrates = STAGES.map((stage) => ({ stage, entry: agg.stages.get(stage.name) }))
+				.filter((s): s is { stage: Stage; entry: { wins: number; played: number } } => !!s.entry)
+				.map((s) => ({ stage: s.stage, winrate: s.entry.wins / s.entry.played }));
+
+			const winrates = stageWinrates.map((s) => s.winrate);
+			const maxWinrate = Math.max(...winrates);
+			const minWinrate = Math.min(...winrates);
+
+			return {
+				player: agg.player,
+				opponent: agg.opponent,
+				played: agg.played,
+				winrate: agg.wins / agg.played,
+				bestStages: stageWinrates.filter((s) => s.winrate === maxWinrate).map((s) => s.stage),
+				worstStages: stageWinrates.filter((s) => s.winrate === minWinrate).map((s) => s.stage),
+			};
+		})
 		// Best winrate first; break ties by the matchup played more often.
 		.sort((a, b) => b.winrate - a.winrate || b.played - a.played);
 });
@@ -494,26 +517,6 @@ onBeforeUnmount(() => {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.75rem;
-}
-
-.matchup-pair {
-	display: flex;
-	align-items: center;
-	gap: 0.25rem;
-	padding: 0.25rem 0.5rem;
-	border-radius: 8px;
-	background: rgba(0, 0, 0, 0.2);
-}
-
-.matchup-icon {
-	width: 48px;
-	height: 48px;
-	object-fit: cover;
-	border-radius: 8px;
-}
-
-.matchup-icon.opponent {
-	transform: scaleX(-1);
 }
 
 .matchup-winrate {
