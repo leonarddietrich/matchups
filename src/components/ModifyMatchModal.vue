@@ -163,12 +163,15 @@
 
 					<button
 						@click="addRound"
-						:disabled="modifiedMatch.rounds.length >= maxRoundsAllowed"
+						:disabled="modifiedMatch.rounds.length >= maxRoundsAllowed || isMatchDecided"
 						class="u-btn u-btn--secondary u-pill btn-add-round"
 					>
 						+ Add Round
 						<span v-if="modifiedMatch.rounds.length >= maxRoundsAllowed" class="disabled-hint">
 							({{ maxRoundsAllowed }} round limit)
+						</span>
+						<span v-else-if="isMatchDecided" class="disabled-hint">
+							(match decided)
 						</span>
 					</button>
 				</div>
@@ -361,6 +364,29 @@ const isFormValid = computed(() => {
 	return hasOpponentName && allRoundsValid
 })
 
+// Number of round wins required to decide the match (best-of series)
+const winsNeeded = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	const currentCollection = collectionName ? matchStore.getMatchCollectionByName(collectionName) : null
+
+	switch (currentCollection?.type) {
+		case 'ranked':
+		case 'casual':
+			return 2 // best of 3
+		case 'tournament':
+			return 3 // best of 5
+		default:
+			return Infinity // friendly: no restriction
+	}
+})
+
+// True once either player has already won, no further round may be added
+const isMatchDecided = computed(() => {
+	const playerWins = modifiedMatch.value.rounds.filter(round => round.won === true).length
+	const opponentWins = modifiedMatch.value.rounds.filter(round => round.won === false).length
+	return playerWins >= winsNeeded.value || opponentWins >= winsNeeded.value
+})
+
 // While set, changes to the working copy are not persisted (used during restore/clear).
 let isRestoring = false
 
@@ -429,8 +455,8 @@ function createEmptyRound(): Round {
 }
 
 function addRound() {
-	if (modifiedMatch.value.rounds.length >= maxRoundsAllowed.value) {
-		return // Don't add more rounds than allowed
+	if (modifiedMatch.value.rounds.length >= maxRoundsAllowed.value || isMatchDecided.value) {
+		return // Don't add more rounds than allowed or after the series is decided
 	}
 	modifiedMatch.value.rounds.push(createEmptyRound())
 }

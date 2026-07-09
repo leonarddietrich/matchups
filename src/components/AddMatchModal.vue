@@ -126,9 +126,10 @@
 					<button
 						@click="addRound"
 						class="u-btn u-btn--secondary u-pill btn-add-round"
-						:disabled="rounds.length >= maxRoundsAllowed"
+						:disabled="rounds.length >= maxRoundsAllowed || isMatchDecided"
 					>
 						+ Add Round ({{ rounds.length }}/{{ maxRoundsAllowed }})
+						<span v-if="isMatchDecided" class="disabled-hint">(match decided)</span>
 					</button>
 				</div>
 
@@ -178,6 +179,14 @@
 		</template>
 		<template v-slot:footer>
 			<button @click="handleCancel" class="u-btn u-btn--secondary u-pill">Cancel</button>
+			<button
+				:disabled="!isFormValid"
+				@click="rematch"
+				class="u-btn u-btn--secondary u-pill"
+				title="Save this match and start a new one against the same opponent"
+			>
+				Rematch
+			</button>
 			<button
 				:disabled="!isFormValid"
 				@click="saveMatch"
@@ -260,6 +269,29 @@ const opponentSuggestions = computed(() => {
 		.sort()
 })
 
+// Number of round wins required to decide the match (best-of 3|5)
+const winsNeeded = computed(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	const currentCollection = collectionName ? matchStore.getMatchCollectionByName(collectionName) : null
+
+	switch (currentCollection?.type) {
+		case 'ranked':
+		case 'casual':
+			return 2 // best of 3
+		case 'tournament':
+			return 3 // best of 5
+		default:
+			return Infinity // friendly: no restriction
+	}
+})
+
+// True once either player has already won, no further round may be added
+const isMatchDecided = computed(() => {
+	const playerWins = rounds.value.filter(round => round.won === true).length
+	const opponentWins = rounds.value.filter(round => round.won === false).length
+	return playerWins >= winsNeeded.value || opponentWins >= winsNeeded.value
+})
+
 const isFormValid = computed(() => {
 	const hasOpponentName = opponentName.value.trim() !== ''
 	const allRoundsValid = rounds.value.every(round =>
@@ -325,7 +357,7 @@ function createEmptyRound(): Round {
 }
 
 function addRound() {
-	if (rounds.value.length < maxRoundsAllowed.value) {
+	if (rounds.value.length < maxRoundsAllowed.value && !isMatchDecided.value) {
 		rounds.value.push(createEmptyRound())
 	}
 }
@@ -344,24 +376,24 @@ function removeLink(index: number) {
 	links.value.splice(index, 1)
 }
 
-function saveMatch() {
+function persistCurrentMatch(): boolean {
 	hasAttemptedSave.value = true
 
 	if (!isFormValid.value) {
 		alert('Please fill in all required fields.')
-		return
+		return false
 	}
 
 	const collectionName = selectionStore.getSelectedMatchCollectionName
 	if (!collectionName) {
 		alert('No match collection selected.')
-		return
+		return false
 	}
 
 	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
 	if (!currentCollection) {
 		alert('Selected match collection not found.')
-		return
+		return false
 	}
 
 	const newMatch: Match | RankedMatch = isRankedCollection.value
@@ -396,9 +428,24 @@ function saveMatch() {
 
 	console.log('New match added:', newMatch)
 
+	return true
+}
+
+function saveMatch() {
+	if (!persistCurrentMatch()) return
+
 	// Reset form and clear the persisted draft
 	clearDraftAndReset()
 	emit('closeAddMatchModal')
+}
+
+function rematch() {
+	if (!persistCurrentMatch()) return
+
+	// Keep the opponent details, but reset the rounds and links for a new match
+	rounds.value = [createEmptyRound()]
+	links.value = []
+	hasAttemptedSave.value = false
 }
 
 function resetForm() {
@@ -567,6 +614,12 @@ onMounted(loadDraft)
 .btn-add-link {
 	width: 100%;
 	margin-top: 1rem;
+}
+
+.disabled-hint {
+	font-size: 0.8rem;
+	opacity: 0.8;
+	margin-left: 0.5rem;
 }
 
 /* Icon selection styles - updated for SingleSelection component */
