@@ -177,7 +177,7 @@
 			</div>
 		</template>
 		<template v-slot:footer>
-			<button @click="$emit('closeAddMatchModal')" class="u-btn u-btn--secondary u-pill">Cancel</button>
+			<button @click="handleCancel" class="u-btn u-btn--secondary u-pill">Cancel</button>
 			<button
 				:disabled="!isFormValid"
 				@click="saveMatch"
@@ -190,13 +190,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import BaseModal from './BaseModal.vue'
 import SingleSelection from './SingleSelection.vue'
 import type { Round, Match, RankedMatch, StageName, RivalName } from '@/types/roa2Types'
 import { STAGES } from '@/constants/roa2'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+
+const ADD_MATCH_STORAGE_KEY = 'addMatchModalDraft'
 
 const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
@@ -394,8 +396,8 @@ function saveMatch() {
 
 	console.log('New match added:', newMatch)
 
-	// Reset form
-	resetForm()
+	// Reset form and clear the persisted draft
+	clearDraftAndReset()
 	emit('closeAddMatchModal')
 }
 
@@ -407,6 +409,74 @@ function resetForm() {
 	links.value = []
 	hasAttemptedSave.value = false
 }
+
+// --- Session storage persistence ---
+// While set, changes to the form are not persisted (used during restore/clear).
+let isRestoring = false
+
+function persistDraft() {
+	if (isRestoring) return
+	const draft = {
+		playerElo: playerElo.value,
+		opponentElo: opponentElo.value,
+		opponentName: opponentName.value,
+		rounds: rounds.value,
+		links: links.value,
+	}
+	try {
+		sessionStorage.setItem(ADD_MATCH_STORAGE_KEY, JSON.stringify(draft))
+	} catch (error) {
+		console.warn('Failed to persist add-match draft:', error)
+	}
+}
+
+function loadDraft() {
+	let raw: string | null = null
+	try {
+		raw = sessionStorage.getItem(ADD_MATCH_STORAGE_KEY)
+	} catch (error) {
+		console.warn('Failed to read add-match draft:', error)
+	}
+	if (!raw) return
+
+	try {
+		const draft = JSON.parse(raw)
+		isRestoring = true
+		playerElo.value = draft.playerElo ?? null
+		opponentElo.value = draft.opponentElo ?? null
+		opponentName.value = typeof draft.opponentName === 'string' ? draft.opponentName : ''
+		rounds.value = Array.isArray(draft.rounds) && draft.rounds.length > 0 ? draft.rounds : [createEmptyRound()]
+		links.value = Array.isArray(draft.links) ? draft.links : []
+		nextTick(() => { isRestoring = false })
+	} catch (error) {
+		console.warn('Failed to restore add-match draft:', error)
+		isRestoring = false
+	}
+}
+
+function clearDraftAndReset() {
+	isRestoring = true
+	try {
+		sessionStorage.removeItem(ADD_MATCH_STORAGE_KEY)
+	} catch (error) {
+		console.warn('Failed to clear add-match draft:', error)
+	}
+	resetForm()
+	nextTick(() => { isRestoring = false })
+}
+
+function handleCancel() {
+	clearDraftAndReset()
+	emit('closeAddMatchModal')
+}
+
+watch(
+	[playerElo, opponentElo, opponentName, rounds, links],
+	persistDraft,
+	{ deep: true }
+)
+
+onMounted(loadDraft)
 </script>
 
 <style scoped lang="css">

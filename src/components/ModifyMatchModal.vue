@@ -1,5 +1,5 @@
 <template>
-	<BaseModal :show="props.display" @close="handleCancel">
+	<BaseModal :show="props.display" @close="handleClose">
 		<template v-slot:header>
 			<h3>Modify Match</h3>
 		</template>
@@ -244,12 +244,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import BaseModal from './BaseModal.vue'
 import SingleSelection from './SingleSelection.vue'
 import type { Round, StageName, RivalName, Match, RankedMatch } from '@/types/roa2Types'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
+
+const MODIFY_MATCH_STORAGE_PREFIX = 'modifyMatchModalDraft:'
+function modifyDraftKey(uuid: string): string {
+	return `${MODIFY_MATCH_STORAGE_PREFIX}${uuid}`
+}
 
 // Type guards
 function isRankedMatch(match: Match | RankedMatch): match is RankedMatch {
@@ -356,10 +361,34 @@ const isFormValid = computed(() => {
 	return hasOpponentName && allRoundsValid
 })
 
+// While set, changes to the working copy are not persisted (used during restore/clear).
+let isRestoring = false
+
 // Watch for prop changes to initialize the form
 watch(() => props.match, (newMatch) => {
 	if (newMatch) {
 		originalMatch.value = { ...newMatch }
+
+		// Restore an in-progress draft for this match if one exists
+		let draftRaw: string | null = null
+		try {
+			draftRaw = sessionStorage.getItem(modifyDraftKey(newMatch.uuid))
+		} catch (error) {
+			console.warn('Failed to read modify-match draft:', error)
+		}
+
+		if (draftRaw) {
+			try {
+				const draft = JSON.parse(draftRaw)
+				isRestoring = true
+				modifiedMatch.value = draft
+				nextTick(() => { isRestoring = false })
+				return
+			} catch (error) {
+				console.warn('Failed to restore modify-match draft:', error)
+			}
+		}
+
 		modifiedMatch.value = {
 			...newMatch,
 			rounds: newMatch.rounds.map(round => ({ ...round })),
@@ -367,6 +396,28 @@ watch(() => props.match, (newMatch) => {
 		}
 	}
 }, { immediate: true })
+
+function persistDraft() {
+	if (isRestoring) return
+	const match = modifiedMatch.value
+	if (!match || !match.uuid) return
+	try {
+		sessionStorage.setItem(modifyDraftKey(match.uuid), JSON.stringify(match))
+	} catch (error) {
+		console.warn('Failed to persist modify-match draft:', error)
+	}
+}
+
+function removeDraft(uuid: string | undefined) {
+	if (!uuid) return
+	try {
+		sessionStorage.removeItem(modifyDraftKey(uuid))
+	} catch (error) {
+		console.warn('Failed to clear modify-match draft:', error)
+	}
+}
+
+watch(modifiedMatch, persistDraft, { deep: true })
 
 function createEmptyRound(): Round {
 	return {
@@ -447,6 +498,9 @@ function saveMatch() {
 
 	console.log('Match updated:', finalMatch)
 
+	// Remove the persisted draft for this match
+	removeDraft(finalMatch.uuid)
+
 	// Close modal
 	emit('closeModifyMatchModal')
 	resetForm()
@@ -491,14 +545,23 @@ function deleteMatch() {
 
 	console.log('Match deleted:', props.match.uuid)
 
+	// Remove the persisted draft for this match
+	removeDraft(props.match.uuid)
+
 	// Close modal
 	emit('closeModifyMatchModal')
 	resetForm()
 }
 
 function handleCancel() {
+	removeDraft(modifiedMatch.value.uuid)
 	emit('closeModifyMatchModal')
 	resetForm()
+}
+
+// Backdrop / escape close keeps the in-progress draft so it can be resumed later
+function handleClose() {
+	emit('closeModifyMatchModal')
 }
 
 function resetForm() {
