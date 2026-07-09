@@ -94,6 +94,7 @@
 									<SingleSelection
 										type="stages"
 										v-model="round.stage"
+										:stageWinrates="getStageWinrates(round)"
 									/>
 								</div>
 							</div>
@@ -193,6 +194,7 @@ import { ref, computed } from 'vue'
 import BaseModal from './BaseModal.vue'
 import SingleSelection from './SingleSelection.vue'
 import type { Round, Match, RankedMatch, StageName, RivalName } from '@/types/roa2Types'
+import { STAGES } from '@/constants/roa2'
 import { useMatchStore } from '@/stores/matchStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 
@@ -263,6 +265,53 @@ const isFormValid = computed(() => {
 	)
 	return hasOpponentName && allRoundsValid
 })
+
+// All rounds in the current collection, used as the source for predicted stage winrates
+const currentCollectionRounds = computed<Round[]>(() => {
+	const collectionName = selectionStore.getSelectedMatchCollectionName
+	if (!collectionName) return []
+
+	const currentCollection = matchStore.getMatchCollectionByName(collectionName)
+	if (!currentCollection) return []
+
+	return currentCollection.matches.flatMap(match => match.rounds)
+})
+
+/**
+ * Computes the predicted per-stage winrate for the matchup pair selected in a round,
+ * based on the historical rounds of the current collection.
+ */
+function getStageWinrates(round: Round): Record<StageName, { timesPlayed: number; percentage: number | undefined }> {
+	const result = {} as Record<StageName, { timesPlayed: number; percentage: number | undefined }>
+
+	const player = round.playerRival
+	const opponent = round.opponentRival
+
+	for (const stage of STAGES) {
+		result[stage.name] = { timesPlayed: 0, percentage: undefined }
+	}
+
+	if (!player || !opponent) return result
+
+	const wins = {} as Record<StageName, number>
+	for (const stage of STAGES) {
+		wins[stage.name] = 0
+	}
+
+	for (const r of currentCollectionRounds.value) {
+		if (r.playerRival === player && r.opponentRival === opponent) {
+			result[r.stage].timesPlayed++
+			if (r.won) wins[r.stage]++
+		}
+	}
+
+	for (const stage of STAGES) {
+		const entry = result[stage.name]
+		entry.percentage = entry.timesPlayed > 0 ? (wins[stage.name] / entry.timesPlayed) * 100 : undefined
+	}
+
+	return result
+}
 
 function createEmptyRound(): Round {
 	return {
@@ -370,7 +419,7 @@ function resetForm() {
 .add-match-content {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 0.75rem;
 }
 
 .match-details-section,
@@ -399,8 +448,8 @@ function resetForm() {
 
 .round-item,
 .link-item {
-	margin-bottom: 1.5rem;
-	padding: 1rem;
+	margin-bottom: 0.75rem;
+	padding: 0.75rem;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 6px;
 	background-color: rgba(255, 255, 255, 0.05);
@@ -425,18 +474,18 @@ function resetForm() {
 .link-form {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 1rem;
+	gap: 0.75rem;
 }
 
 .round-form-vertical {
 	grid-template-columns: 1fr;
-	gap: 1.5rem;
+	gap: 0.75rem;
 }
 
 .character-selection-row {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 1rem;
+	gap: 0.5rem;
 }
 
 .btn-small {

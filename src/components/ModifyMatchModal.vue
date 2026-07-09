@@ -527,7 +527,7 @@ function resetForm() {
 .modify-match-content {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 0.75rem;
 }
 
 .match-details-section,
@@ -550,7 +550,7 @@ function resetForm() {
 .old-new-container {
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
+	gap: 0.25rem;
 }
 
 .old-value {
@@ -564,13 +564,13 @@ function resetForm() {
 .round-form-vertical {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 0.75rem;
 }
 
 .character-selection-row {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 1rem;
+	gap: 0.5rem;
 }
 
 /* Icon selection styles - updated for SingleSelection component */
@@ -622,8 +622,8 @@ function resetForm() {
 
 .round-item,
 .link-item {
-	margin-bottom: 1.5rem;
-	padding: 1rem;
+	margin-bottom: 0.75rem;
+	padding: 0.75rem;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 6px;
 	background-color: rgba(255, 255, 255, 0.05);
