@@ -122,7 +122,7 @@ export const RIVALS: Rival[] = [
 		name: 'Absa',
 		element: 'Air',
 		iconPath: AbsaPortrait,
-		color: '#444477',
+		color: '#662244',
 	},
 	{
 		name: 'Ranno',
@@ -134,7 +134,7 @@ export const RIVALS: Rival[] = [
 		name: 'Orcane',
 		element: 'Water',
 		iconPath: OrcanePortrait,
-		color: '#334499',
+		color: '#223377',
 	},
 	{
 		name: 'Etalus',
@@ -146,7 +146,7 @@ export const RIVALS: Rival[] = [
 		name: 'Slade',
 		element: 'Water',
 		iconPath: SladePortrait,
-		color: '#334477',
+		color: '#4477AA',
 	}
 ]
 
