@@ -1,16 +1,18 @@
 <template>
 	<div class="character-selection-container">
-		<div
-			v-for="rival in RIVALS"
-			:key="rival.name"
-			@click="selectCharacter(rival.name)"
-			:class="[
-				'character-selection',
-				{ selected: selectedRival === rival.name, disabled: !isSelectable(rival.name) },
-			]"
-		>
-			<div class="character-image">
-				<img :src="rival.iconPath" :alt="rival.name" :class="{ 'opponent-character': isOpponent }" :style="getShadowStyle(rival.name)" />
+		<div v-for="group in groupedRivals" :key="group.element" class="element-group">
+			<div
+				v-for="rival in group.rivals"
+				:key="rival.name"
+				@click="selectCharacter(rival.name)"
+				:class="[
+					'character-selection',
+					{ selected: selectedRival === rival.name, disabled: !isSelectable(rival.name) },
+				]"
+			>
+				<div class="character-image">
+					<img :src="rival.iconPath" :alt="rival.name" :class="{ 'opponent-character': isOpponent }" :style="getShadowStyle(rival.name)" />
+				</div>
 			</div>
 		</div>
 	</div>
@@ -19,7 +21,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { RIVALS } from '@/constants'
-import type { RivalName } from '@/types/roa2Types'
+import type { RivalName, RivalElement } from '@/types/roa2Types'
 
 export default defineComponent({
 	props: {
@@ -46,6 +48,15 @@ export default defineComponent({
 		},
 	},
 	emits: ['characterSelected'],
+	computed: {
+		groupedRivals(): { element: RivalElement; rivals: typeof RIVALS }[] {
+			const order: RivalElement[] = ['Fire', 'Air', 'Earth', 'Water']
+			return order.map((element) => ({
+				element,
+				rivals: RIVALS.filter((r) => r.element === element),
+			}))
+		},
+	},
 	methods: {
 		selectCharacter(rivalName: RivalName) {
 			if (!this.isSelectable(rivalName)) return
@@ -92,18 +103,25 @@ export default defineComponent({
 <style scoped>
 .character-selection-container {
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	width: 100%;
-	height: 100%;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: fit-content;
 	padding: 10px;
+	box-sizing: border-box;
+}
+
+.element-group {
+	display: grid;
+	grid-template-columns: repeat(5, 80px);
+	gap: 12px;
+	justify-content: center;
 }
 
 .character-selection {
 	display: flex;
 	width: 80px;
 	height: 80px;
-	margin: 5px;
 	cursor: pointer;
 }
 

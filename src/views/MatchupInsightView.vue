@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="insight-view">
 		<h1>Matchup Insight</h1>
 
 		<!-- Rounds Source Selector -->
@@ -300,6 +300,10 @@ const opponentWinrateMap = computed<Record<RivalName, number>>(() => {
 </script>
 
 <style scoped>
+.insight-view {
+	padding: 1.5rem clamp(1rem, 4vw, 3rem) 2.5rem;
+	box-sizing: border-box;
+}
 .rounds-source {
 	display: flex;
 	gap: 1rem;
@@ -399,10 +403,11 @@ const opponentWinrateMap = computed<Record<RivalName, number>>(() => {
 }
 
 .selectors {
-	display: grid;
-	grid-template-columns: 1fr 2px 1fr;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 1rem;
 	width: 100%;
-	height: 100%;
 	margin-top: 2rem;
 }
 
