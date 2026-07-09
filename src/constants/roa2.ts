@@ -78,7 +78,7 @@ export const RIVALS: Rival[] = [
 	},
 	{
 		name: 'La Reina',
-		element: 'Fire',
+		element: 'Earth',
 		iconPath: LaReinaPortrait,
 		color: '#993355',
 	},
