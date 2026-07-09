@@ -96,7 +96,7 @@ const matchStore = useMatchStore()
 const selectionStore = useSelectionStore()
 
 type RoundsSourceMode = 'current' | 'all' | 'byType' | 'byPlayer'
-const roundsSourceMode = ref<RoundsSourceMode>('current')
+const roundsSourceMode = ref<RoundsSourceMode>('all')
 const selectedType = ref<MatchType>('ranked')
 const selectedOpponentName = ref<string>('')
 
