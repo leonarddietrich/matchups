@@ -5,8 +5,10 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
+// Base path is '/' by default (netlify, served at the domain root).
+// github pages serves under '/matchups/', set via the BASE_PATH env var at build time
 export default defineConfig({
-	base: '/',
+	base: process.env.BASE_PATH ?? '/',
   plugins: [
     vue(),
     vueDevTools(),
