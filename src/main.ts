@@ -1,5 +1,3 @@
-import "./css/main.css";
-
 import { createApp } from "vue";
 import router from "./router/router";
 import store from "./stores/store";
