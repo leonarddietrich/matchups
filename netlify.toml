@@ -12,6 +12,12 @@
   [headers.values]
     Content-Type = "text/css"
 
+# Backward-compat: old links under /matchups/ now live at the site root
+[[redirects]]
+  from = "/matchups/*"
+  to = "/:splat"
+  status = 301
+
 # SPA fallback - this should handle all routes that don't match files
 [[redirects]]
   from = "/*"
