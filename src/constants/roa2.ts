@@ -57,7 +57,7 @@ export const RIVALS: Rival[] = [
 		name: 'Forsburn',
 		element: 'Fire',
 		iconPath: ForsburnPortrait,
-		color: '#333344',
+		color: '#1A1C23',
 	},
 	{
 		name: 'Loxodont',
@@ -69,7 +69,7 @@ export const RIVALS: Rival[] = [
 		name: 'Clairen',
 		element: 'Fire',
 		iconPath: ClairenPortrait,
-		color: '#990044',
+		color: '#E20066',
 	},
 	{
 		name: 'Zetterburn',
@@ -81,19 +81,19 @@ export const RIVALS: Rival[] = [
 		name: 'La Reina',
 		element: 'Earth',
 		iconPath: LaReinaPortrait,
-		color: '#993355',
+		color: '#AD4960',
 	},
 	{
 		name: 'Galvan',
 		element: 'Earth',
 		iconPath: GalvanPortrait,
-		color: '#224444',
+		color: '#447E7E',
 	},
 	{
 		name: 'Olympia',
 		element: 'Earth',
 		iconPath: OlympiaPortrait,
-		color: '#AA9999',
+		color: '#F25AA3',
 	},
 	{
 		name: 'Maypul',
@@ -112,7 +112,7 @@ export const RIVALS: Rival[] = [
 		name: 'Wrastor',
 		element: 'Air',
 		iconPath: WrastorPortrait,
-		color: '#331144',
+		color: '#CA67FF',
 	},
 	{
 		name: 'Fleet',
@@ -130,9 +130,7 @@ export const RIVALS: Rival[] = [
 		name: 'Ranno',
 		element: 'Water',
 		iconPath: RannoPortrait,
-		// color: '#66CC33',
-		// color: '#1166AA',
-		color: '#11B07A'
+		color: '#66CC33',
 	},
 	{
 		name: 'Orcane',
