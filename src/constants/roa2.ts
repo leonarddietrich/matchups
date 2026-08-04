@@ -9,6 +9,7 @@ import EtalusPortrait from '@/assets/roa2/characters/RoA2_Etalus_Portrait.png';
 import FleetPortrait from '@/assets/roa2/characters/RoA2_Fleet_Portrait.png';
 import ForsburnPortrait from '@/assets/roa2/characters/RoA2_Forsburn_Portrait.png';
 import GalvanPortrait from '@/assets/roa2/characters/RoA2_Galvan_Portrait.png';
+import GouiePortrait from '@/assets/roa2/characters/RoA2_Gouie_Portrait.png';
 import KraggPortrait from '@/assets/roa2/characters/RoA2_Kragg_Portrait.png';
 import LaReinaPortrait from '@/assets/roa2/characters/RoA2_La_Reina_Portrait.png';
 import LoxodontPortrait from '@/assets/roa2/characters/RoA2_Loxodont_Portrait.png';
@@ -98,7 +99,8 @@ export const RIVALS: Rival[] = [
 		name: 'Maypul',
 		element: 'Earth',
 		iconPath: MaypulPortrait,
-		color: '#335522',
+		// color: '#335522',
+		color: '#447733',
 	},
 	{
 		name: 'Kragg',
@@ -128,7 +130,9 @@ export const RIVALS: Rival[] = [
 		name: 'Ranno',
 		element: 'Water',
 		iconPath: RannoPortrait,
-		color: '#66CC33',
+		// color: '#66CC33',
+		// color: '#1166AA',
+		color: '#11B07A'
 	},
 	{
 		name: 'Orcane',
@@ -147,6 +151,12 @@ export const RIVALS: Rival[] = [
 		element: 'Water',
 		iconPath: SladePortrait,
 		color: '#4477AA',
+	},
+	{
+		name: 'Gouie',
+		element: 'Water',
+		iconPath: GouiePortrait,
+		color: '#B3F30C',
 	}
 ]
 

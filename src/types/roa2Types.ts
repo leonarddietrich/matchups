@@ -7,6 +7,7 @@ export type RivalName =
 | 'Fleet'
 | 'Forsburn'
 | 'Galvan'
+| 'Gouie'
 | 'Kragg'
 | 'La Reina'
 | 'Loxodont'
