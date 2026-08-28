@@ -2,7 +2,7 @@
  * Rivals of Aether 2 Utilities
  */
 
-import type { Rival, Stage, RivalName, StageName, Match,
+import type { Rival, Stage, RivalName, StageName, Match, MatchType,
 	RankedMatch, AnyMatchCollection, FriendlyGame, FriendlyMatchCollection } from '@/types/roa2Types'
 import { ImageFormat } from '@/types/shared/media'
 import { RIVALS, STAGES } from '@/constants/roa2';
@@ -235,5 +235,51 @@ export function getCollectionMatches(collection: AnyMatchCollection): Match[] {
 		return collection.games.map(friendlyGameToMatch)
 	}
 	return collection.matches
+}
+
+/** Maximum number of rounds a single match may contain, per collection type. */
+const MAX_ROUNDS_BY_TYPE: Record<MatchType, number> = {
+	ranked: 3,
+	casual: 3,
+	tournament: 5,
+	friendly: 1,
+}
+
+/**
+ * Validates the integrity of a match collection's data. Reports rounds referencing
+ * characters or stages that no longer exist, as well as matches whose round count is
+ * outside the range allowed for the collection type.
+ *
+ * @returns A list of human-readable issue descriptions. Empty when the collection is valid.
+ */
+export function validateMatchCollection(collection: AnyMatchCollection): string[] {
+	const issues: string[] = []
+	const validRivals = new Set<string>(RIVALS.map(rival => rival.name))
+	const validStages = new Set<string>(STAGES.map(stage => stage.name))
+	const maxRounds = MAX_ROUNDS_BY_TYPE[collection.type] ?? 3
+
+	getCollectionMatches(collection).forEach((match, matchIndex) => {
+		const matchLabel = `match ${matchIndex + 1}${match.opponentName ? ` (vs ${match.opponentName})` : ''}`
+
+		const roundCount = match.rounds.length
+		if (roundCount < 1 || roundCount > maxRounds) {
+			issues.push(`${matchLabel}: invalid round count ${roundCount} (expected 1-${maxRounds})`)
+		}
+
+		match.rounds.forEach((round, roundIndex) => {
+			const roundLabel = `${matchLabel}, round ${roundIndex + 1}`
+			if (!validRivals.has(round.playerRival)) {
+				issues.push(`${roundLabel}: unknown player character "${round.playerRival}"`)
+			}
+			if (!validRivals.has(round.opponentRival)) {
+				issues.push(`${roundLabel}: unknown opponent character "${round.opponentRival}"`)
+			}
+			if (!validStages.has(round.stage)) {
+				issues.push(`${roundLabel}: unknown stage "${round.stage}"`)
+			}
+		})
+	})
+
+	return issues
 }
 

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { AnyMatchCollection, Match, RankedMatch } from '../types/roa2Types'
 import { LOCAL_STORAGE_KEYS } from '@/constants'
 import { CURRENT_MATCH_DATA_VERSION } from '@/constants/match'
-import { transformMatchCollectionWithOutdatedVersion, matchToFriendlyGame, isFriendlyCollection } from '@/scripts/roa2'
+import { transformMatchCollectionWithOutdatedVersion, matchToFriendlyGame, isFriendlyCollection, validateMatchCollection } from '@/scripts/roa2'
 
 export const useMatchStore = defineStore('matchStore', {
 	state: () => ({
@@ -66,6 +66,28 @@ export const useMatchStore = defineStore('matchStore', {
 				}
 			}
 			console.info('Loaded match collections:', this.matchCollections)
+			this.warnAboutInvalidCollections()
+		},
+		/**
+		 * Validates all loaded collections and alerts the user if any contain invalid data,
+		 * such as rounds referencing non-existent characters or stages, or an invalid round count.
+		 */
+		warnAboutInvalidCollections() {
+			const reports: string[] = []
+			for (const collection of this.matchCollections) {
+				const issues = validateMatchCollection(collection)
+				if (issues.length > 0) {
+					reports.push(`Collection "${collection.name}":\n  - ${issues.join('\n  - ')}`)
+				}
+			}
+
+			if (reports.length === 0) return
+
+			const message = `Some match collections contain invalid data:\n\n${reports.join('\n\n')}`
+			console.warn(message)
+			if (typeof alert === 'function') {
+				alert(message)
+			}
 		},
 		/**
 		 * Saves the current state of match collections to local storage.
